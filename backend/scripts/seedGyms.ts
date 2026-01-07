@@ -1,6 +1,8 @@
 import mongoose from 'mongoose';
 import { Gym } from '../models/gymModel.js';
 import { User } from '../models/userModel.js';
+import axios from 'axios';
+import { MongoClient } from 'mongodb';
 import "dotenv/config";
 
 interface GymData {
@@ -26,6 +28,50 @@ interface GymData {
     images: string[];
     status: 'active' | 'suspended' | 'closed';
 }
+
+// Sample user data
+const sampleUsers = [
+    {
+        name: 'John Smith',
+        email: 'johnsmith@example.com',
+        phone: '+251911234567',
+        registrationRole: 'owner',
+        city: 'Addis Ababa',
+        area: 'Bole',
+    },
+    {
+        name: 'Sarah Johnson',
+        email: 'sarahj@example.com',
+        phone: '+251911234568',
+        registrationRole: 'owner',
+        city: 'Addis Ababa',
+        area: 'Piassa',
+    },
+    {
+        name: 'Michael Chen',
+        email: 'michaelc@example.com',
+        phone: '+251911234569',
+        registrationRole: 'owner',
+        city: 'Addis Ababa',
+        area: 'Kazanchis',
+    },
+    {
+        name: 'Emily Rodriguez',
+        email: 'emilyr@example.com',
+        phone: '+251911234570',
+        registrationRole: 'owner',
+        city: 'Addis Ababa',
+        area: 'Megenagna',
+    },
+    {
+        name: 'David Wilson',
+        email: 'davidw@example.com',
+        phone: '+251911234571',
+        registrationRole: 'owner',
+        city: 'Addis Ababa',
+        area: 'Cathedral',
+    }
+];
 
 // Sample gym data with dummy images
 const sampleGyms: GymData[] = [
@@ -176,17 +222,107 @@ const seedGyms = async () => {
         await Gym.deleteMany({});
         console.log('Cleared existing gyms');
 
-        // Get existing users to assign as gym owners
-        const users = await User.find({}, { _id: 1 }).limit(5);
-        if (users.length === 0) {
-            console.log('No users found. Please seed users first.');
+        // Connect to MongoDB to clear existing sample users from Better Auth collections
+        const mongoClient = new MongoClient(process.env.MONGO_URI!);
+        await mongoClient.connect();
+
+        const dbName = mongoClient.db().databaseName;
+        console.log(`Connected to database: ${dbName}`);
+
+        // List all collections to see what's available
+        const collections = await mongoClient.db().listCollections().toArray();
+        console.log('Available collections:', collections.map(c => c.name));
+
+        // Try to delete from common Better Auth collections
+        const collectionNames = ['better-auth_user', 'better_auth_user', 'user', 'users'];
+
+        for (const collectionName of collectionNames) {
+            try {
+                const collection = mongoClient.db().collection(collectionName);
+                const result = await collection.deleteMany({ email: { $in: sampleUsers.map(u => u.email) } });
+                console.log(`Cleared ${result.deletedCount} users from ${collectionName} collection`);
+            } catch (error: any) {
+                console.log(`Collection ${collectionName} may not exist or be accessible:`, error.message);
+            }
+        }
+
+        // Also try account collections
+        const accountCollectionNames = ['better-auth_account', 'better_auth_account', 'account', 'accounts'];
+        for (const collectionName of accountCollectionNames) {
+            try {
+                const collection = mongoClient.db().collection(collectionName);
+                const result = await collection.deleteMany({ email: { $in: sampleUsers.map(u => u.email) } });
+                console.log(`Cleared ${result.deletedCount} accounts from ${collectionName} collection`);
+            } catch (error: any) {
+                console.log(`Account collection ${collectionName} may not exist or be accessible:`, error.message);
+            }
+        }
+
+        // Also clear sessions for these users
+        const sessionCollectionNames = ['better-auth_session', 'better_auth_session', 'session', 'sessions'];
+        for (const collectionName of sessionCollectionNames) {
+            try {
+                const collection = mongoClient.db().collection(collectionName);
+                // Sessions might be linked by userId instead of email, so we'll try a broader cleanup
+                const result = await collection.deleteMany({});
+                console.log(`Cleared ${result.deletedCount} sessions from ${collectionName} collection`);
+            } catch (error: any) {
+                console.log(`Session collection ${collectionName} may not exist or be accessible:`, error.message);
+            }
+        }
+
+        // Close the connection
+        await mongoClient.close();
+        console.log('Finished clearing existing sample users');
+
+        // Wait a bit longer to ensure deletions are processed
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        // Wait a moment for deletions to process
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        // Create users via API calls
+        const createdUsers = [];
+        for (const userData of sampleUsers) {
+            try {
+                // Call the auth API to create the user
+                const response = await axios.post(`${process.env.BACKEND_URL || 'http://localhost:3005'}/api/auth/sign-up/email`, {
+                    ...userData,
+                    password: '12345678', // Default password as requested
+                    emailVerified: true
+                });
+
+                console.log(`Created user via API: ${userData.name} (${userData.email})`);
+
+                // Add to created users array with the user ID from the response
+                createdUsers.push({
+                    _id: response.data.user.id,
+                    ...userData
+                });
+            } catch (error: any) {
+                console.error(`Error creating user ${userData.email}:`, error.response?.data || error.message || error);
+                // Continue with other users
+            }
+        }
+
+        if (createdUsers.length === 0) {
+            console.log('No users were created via API.');
+            process.exit(1);
+        }
+
+        // Use the created users
+        const allUsers = createdUsers;
+
+        // Ensure all users were created successfully
+        if (allUsers.length === 0) {
+            console.log('No users were successfully created via API.');
             process.exit(1);
         }
 
         // Prepare gym data with valid owner IDs
         const gymsToInsert = sampleGyms.map((gym, index) => ({
             ...gym,
-            ownerId: users[index % users.length]._id,
+            ownerId: allUsers[index % allUsers.length]?._id,
             verifiedAt: new Date(),
             verificationDocuments: [],
             createdAt: new Date(),
@@ -201,7 +337,7 @@ const seedGyms = async () => {
         await mongoose.disconnect();
         console.log('Disconnected from MongoDB');
     } catch (error) {
-        console.error('Error seeding gyms:', error);
+        console.error('Error seeding data:', error);
         process.exit(1);
     }
 };
