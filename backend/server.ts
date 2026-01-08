@@ -13,6 +13,10 @@ import gymRoutes from "./routes/gym.js";
 import membershipRoutes from "./routes/membership.js";
 import trainerRoutes from "./routes/trainer.js";
 import trainingSessionRoutes from "./routes/trainingSession.js";
+import subscriptionRoutes from "./routes/subscription.js";
+import bookingRoutes from "./routes/booking.js";
+
+
 
 
 
@@ -63,6 +67,10 @@ console.log("🛠️ Registering /api/memberships route...");
 app.use("/api/memberships", membershipRoutes);
 app.use("/api/trainers", trainerRoutes);
 app.use("/api/training-sessions", trainingSessionRoutes);
+app.use("/api/subscriptions", subscriptionRoutes);
+app.use("/api/bookings", bookingRoutes);
+
+
 
 
 
