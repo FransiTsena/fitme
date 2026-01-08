@@ -109,7 +109,7 @@ Store the `data._id` (Gym ID) from the response. You will need it for Step 2.
 - **Header**: `Content-Type: multipart/form-data`
 - **Body**:
     - `document`: (File Binary)
-    - **ownerId**: "USER_ID_FROM_AUTH_CONTEXT"
+    - `ownerId`: "USER_ID_FROM_AUTH_CONTEXT"
     - **Note**: The gym record (Step 1) must exist first.
 
 ### Success State
@@ -134,3 +134,24 @@ Store the `data._id` (Gym ID) from the response. You will need it for Step 2.
 - **Endpoint**: `PATCH /api/memberships/:id/status`
 - **Body**: `{ "isActive": false }`
 - **UI**: Use a toggle switch next to the plan in the dashboard.
+
+---
+
+## 🏋️‍♂️ Step 5: Trainer Management (Promotion)
+**Goal**: Invite existing members to become trainers.
+
+### 1. Search Candidate
+- **Endpoint**: `GET /api/trainers/search?q=EMAIL_OR_NAME`
+- **UI**: Search bar in "Manage Trainers" dashboard.
+- **Response**: List of candidates `{ _id, name, email, profileImage }`.
+
+### 2. Send Invitation
+- **Endpoint**: `POST /api/trainers/invite`
+- **Body**: `{ "gymId": "...", "memberId": "..." }`
+- **Action**: Triggers an email to the user with a magic link.
+
+### 3. Accept Invitation (User Side)
+- **Page**: `FRONTEND_URL/join-trainer?token=...`
+- **Endpoint**: `POST /api/trainers/accept-invite`
+- **Body**: `{ "token": "TOKEN_FROM_URL_QUERY_PARAM" }`
+- **Success**: User role updates to `trainer`, redirect to Trainer Dashboard.
