@@ -109,10 +109,28 @@ Store the `data._id` (Gym ID) from the response. You will need it for Step 2.
 - **Header**: `Content-Type: multipart/form-data`
 - **Body**:
     - `document`: (File Binary)
-    - **ownerId**: "USER_ID_FROM_AUTH_CONTEXT" (Must match the gym owner)
+    - **ownerId**: "USER_ID_FROM_AUTH_CONTEXT"
+    - **Note**: The gym record (Step 1) must exist first.
 
 ### Success State
 - Show a "Pending Approval" screen.
 - The user cannot modify the gym status anymore until Admin approves.
 
 ---
+
+## 💳 Step 4: Membership Plans (Optional at setup)
+**Goal**: Create, Edit, or Disable subscription plans.
+
+### 1. Create Plan
+- **Endpoint**: `POST /api/memberships`
+- **Body**: `{ gymId, ownerId, title, price, durationInDays, description }`
+
+### 2. Update Plan
+- **Endpoint**: `PUT /api/memberships/:id`
+- **Body**: `{ price: 2000, title: "New Name" }` (Send only changed fields)
+- **Note**: Requires user to be the owner of the gym.
+
+### 3. Disable/Enable Plan
+- **Endpoint**: `PATCH /api/memberships/:id/status`
+- **Body**: `{ "isActive": false }`
+- **UI**: Use a toggle switch next to the plan in the dashboard.
