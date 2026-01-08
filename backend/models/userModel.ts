@@ -29,7 +29,32 @@ const userSchema = new mongoose.Schema({
     documentReviewedBy: { type: String }, // Admin user ID who reviewed
     documentReviewNotes: { type: String }, // Notes from admin review
 }, {
-    timestamps: true, // Automatically manage createdAt and updatedAt
+    timestamps: true,
+    collection: "user" // Force singular to match Better Auth
 });
 
-export const User = mongoose.models.User || mongoose.model("User", userSchema);
+
+export interface IUser {
+    name: string;
+    email: string;
+    emailVerified: boolean;
+    image?: string;
+    createdAt: Date;
+    updatedAt: Date;
+    fatherName?: string;
+    phone?: string;
+    role: string;
+    status: string;
+    city?: string;
+    area?: string;
+    profileImage?: string;
+    ownerDocuments?: string[];
+    documentStatus: "not_submitted" | "pending" | "approved" | "rejected";
+    documentSubmittedAt?: Date;
+    documentReviewedAt?: Date;
+    documentReviewedBy?: string;
+    documentReviewNotes?: string;
+}
+
+export const User = (mongoose.models.User as mongoose.Model<IUser>) || mongoose.model<IUser>("User", userSchema);
+
