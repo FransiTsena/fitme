@@ -155,3 +155,29 @@ Store the `data._id` (Gym ID) from the response. You will need it for Step 2.
 - **Endpoint**: `POST /api/trainers/accept-invite`
 - **Body**: `{ "token": "TOKEN_FROM_URL_QUERY_PARAM" }`
 - **Success**: User role updates to `trainer`, redirect to Trainer Dashboard.
+
+---
+
+## 🏋️‍♂️ Step 6: Training Session Management (Trainer)
+**Goal**: Trainers create and manage their session offerings.
+
+### 1. Create Session
+- **Endpoint**: `POST /api/training-sessions`
+- **Body**: 
+  ```json
+  {
+    "userId": "TRAINER_USER_ID", // Optional if using auth token
+    "title": "HIIT Blast",
+    "description": "High intensity interval training",
+    "durationMinutes": 45,
+    "price": 500
+  }
+  ```
+
+### 2. Update Session
+- **Endpoint**: `PUT /api/training-sessions/:id`
+- **Body**: `{ "title": "New Title", "price": 600 }` (Send only changes)
+
+### 3. Disable/Enable Session
+- **Endpoint**: `PATCH /api/training-sessions/:id/status`
+- **Body**: `{ "isActive": false }`
