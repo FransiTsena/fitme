@@ -28,25 +28,21 @@ export const requireAuth = async (
   next: NextFunction
 ) => {
   try {
-    const authHeader = req.headers.authorization;
-
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return res.status(401).json({ error: "Authorization token required" });
-    }
-
-    const token = authHeader.split(" ")[1];
-
-    if (!token) {
-      return res.status(401).json({ error: "Authorization token required" });
-    }
-
-    // Better-auth expects session token in cookie format
-    // URL encode the token as it may contain special characters (+, /, =)
-    const session = await auth.api.getSession({
-      headers: new Headers({
-        cookie: `better-auth.session_token=${encodeURIComponent(token)}`,
-      }),
+    // 1. Try standard better-auth session retrieval via headers
+    let session = await auth.api.getSession({
+      headers: new Headers(req.headers as any),
     });
+
+    // 2. Fallback: If no session but Authorization header exists, try manually passing as cookie
+    // This handles cases where better-auth expects the session token in a specific cookie
+    if (!session && req.headers.authorization?.startsWith("Bearer ")) {
+      const token = req.headers.authorization.split(" ")[1];
+      session = await auth.api.getSession({
+        headers: new Headers({
+          cookie: `better-auth.session_token=${encodeURIComponent(token ?? "")}`,
+        }),
+      });
+    }
 
     if (!session || !session.user) {
       return res.status(401).json({ error: "Invalid or expired token" });
@@ -71,27 +67,17 @@ export const optionalAuth = async (
   next: NextFunction
 ) => {
   try {
-    const authHeader = req.headers.authorization;
+    const session = await auth.api.getSession({
+      headers: new Headers(req.headers as any),
+    });
 
-    if (authHeader && authHeader.startsWith("Bearer ")) {
-      const token = authHeader.split(" ")[1];
-
-      if (token) {
-        const session = await auth.api.getSession({
-          headers: new Headers({
-            cookie: `better-auth.session_token=${encodeURIComponent(token)}`,
-          }),
-        });
-
-        if (session?.user) {
-          req.user = session.user as any;
-        }
-      }
+    if (session?.user) {
+      req.user = session.user as any;
     }
 
     next();
   } catch (error) {
-    // Continue without user if token is invalid
+    // Continue without user if session is invalid
     next();
   }
 };
