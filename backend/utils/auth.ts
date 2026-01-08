@@ -16,6 +16,7 @@ export const auth = betterAuth({
 
   // Session configuration - using JWT instead of database sessions
   session: {
+    strategy: "jwt",
     cookieCache: {
       enabled: true,
       maxAge: 60 * 5, // 5 minutes cache

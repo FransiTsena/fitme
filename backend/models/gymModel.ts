@@ -1,34 +1,56 @@
 import mongoose from "mongoose";
 
 const gymSchema = new mongoose.Schema({
-  // Owner reference
+  // Owner who registered the gym
   ownerId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-  ownerName: { type: String, required: true },
-  ownerEmail: { type: String, required: true },
-  ownerPhone: { type: String },
 
-  // Gym details
-  gymName: { type: String },
+  // Basic gym info
+  name: { type: String, required: true },
   description: { type: String },
-  
-  // Location
-  city: { type: String, required: true },
-  area: { type: String, required: true },
-  address: { type: String },
-  
-  // Verification details
-  verifiedAt: { type: Date, default: Date.now },
-  verifiedBy: { type: String }, // Admin user ID who verified
-  verificationDocuments: [{ type: String }], // Copy of documents used for verification
-  
-  // Status
-  status: { 
-    type: String, 
-    enum: ["active", "suspended", "closed"],
-    default: "active" 
+
+  // Location for map & nearby search
+  location: {
+    type: {
+      type: String,
+      enum: ["Point"],
+      required: true,
+      default: "Point"
+    },
+    coordinates: {
+      type: [Number], // [longitude, latitude]
+      required: true
+    }
   },
-  
-  // Additional gym info (can be filled later by owner)
+
+
+  // Rating info
+  rating: {
+    average: { type: Number, default: 0 },
+    count: { type: Number, default: 0 }
+  },
+
+  // Optional human-readable address
+  address: {
+    city: { type: String, required: true },
+    area: { type: String, required: true },
+    street: { type: String } // Added street for completeness
+  },
+
+  // Gym images
+  photos: [{ type: String }],
+
+  // Verification & visibility
+  verificationStatus: {
+    type: String,
+    enum: ["pending", "approved", "rejected"],
+    default: "pending"
+  },
+  isActive: { type: Boolean, default: false },
+
+  // Verification document URL
+  verificationDocument: { type: String },
+
+  // Custom data (operating hours, amenities etc)
   operatingHours: {
     monday: { open: String, close: String },
     tuesday: { open: String, close: String },
@@ -39,17 +61,51 @@ const gymSchema = new mongoose.Schema({
     sunday: { open: String, close: String },
   },
   amenities: [{ type: String }],
-  images: [{ type: String }],
-  
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now },
 }, {
   timestamps: true,
 });
 
-// Index for efficient queries
+// Indexes
 gymSchema.index({ ownerId: 1 }, { unique: true });
-gymSchema.index({ city: 1, area: 1 });
-gymSchema.index({ status: 1 });
+gymSchema.index({ location: "2dsphere" });
+gymSchema.index({ "address.city": 1, "address.area": 1 });
+gymSchema.index({ verificationStatus: 1 });
 
-export const Gym = mongoose.models.Gym || mongoose.model("Gym", gymSchema);
+export interface IGym {
+  ownerId: mongoose.Types.ObjectId;
+  name: string;
+  description?: string;
+  location: {
+    type: "Point";
+    coordinates: [number, number];
+  };
+  rating: {
+    average: number;
+    count: number;
+  };
+  address: {
+    city: string;
+    area: string;
+    street?: string;
+  };
+  photos?: string[];
+  verificationStatus: "pending" | "approved" | "rejected";
+  isActive: boolean;
+  verificationDocument?: string;
+  operatingHours?: {
+    monday?: { open?: string; close?: string };
+    tuesday?: { open?: string; close?: string };
+    wednesday?: { open?: string; close?: string };
+    thursday?: { open?: string; close?: string };
+    friday?: { open?: string; close?: string };
+    saturday?: { open?: string; close?: string };
+    sunday?: { open?: string; close?: string };
+  };
+  amenities?: string[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export const Gym = (mongoose.models.Gym as mongoose.Model<IGym>) || mongoose.model<IGym>("Gym", gymSchema);
+
+

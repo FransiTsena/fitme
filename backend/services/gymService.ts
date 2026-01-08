@@ -1,17 +1,21 @@
 import { Types } from 'mongoose';
-import { Gym } from '../models/gymModel';
-import { User } from '../models/userModel';
+import { Gym } from '../models/gymModel.js';
+import { User } from '../models/userModel.js';
 
 interface CreateGymData {
     ownerId: string;
-    ownerName: string;
-    ownerEmail: string;
-    ownerPhone?: string;
-    gymName?: string;
+    name: string;
     description?: string;
-    city: string;
-    area: string;
-    address?: string;
+    location: {
+        type: "Point";
+        coordinates: [number, number]; // [longitude, latitude]
+    };
+    address: {
+        city: string;
+        area: string;
+        street?: string;
+    };
+    photos?: string[];
     operatingHours?: {
         monday?: { open: string; close: string };
         tuesday?: { open: string; close: string };
@@ -22,15 +26,21 @@ interface CreateGymData {
         sunday?: { open: string; close: string };
     };
     amenities?: string[];
-    images?: string[];
 }
 
 interface UpdateGymData {
-    gymName?: string;
+    name?: string;
     description?: string;
-    address?: string;
-    city?: string;
-    area?: string;
+    location?: {
+        type: "Point";
+        coordinates: [number, number];
+    };
+    address?: {
+        city?: string;
+        area?: string;
+        street?: string;
+    };
+    photos?: string[];
     operatingHours?: {
         monday?: { open: string; close: string };
         tuesday?: { open: string; close: string };
@@ -41,42 +51,66 @@ interface UpdateGymData {
         sunday?: { open: string; close: string };
     };
     amenities?: string[];
-    images?: string[];
-    status?: 'active' | 'suspended' | 'closed';
+    verificationStatus?: 'pending' | 'approved' | 'rejected';
+    isActive?: boolean;
 }
 
 export const gymService = {
     // Create a new gym
     createGym: async (gymData: CreateGymData) => {
         try {
+            console.log("Creating gym for owner ID:", gymData.ownerId);
+            
+            // Explicitly cast and validate ownerId
+            let ownerObjectId: Types.ObjectId;
+            try {
+                ownerObjectId = new Types.ObjectId(gymData.ownerId);
+            } catch (err) {
+                throw new Error('Invalid Owner ID format');
+            }
+
             // Check if user exists
-            const user = await User.findById(gymData.ownerId);
+            const user = await User.findById(ownerObjectId);
             if (!user) {
                 throw new Error('Owner does not exist');
             }
 
             // Check if a gym already exists for this owner
-            const existingGym = await Gym.findOne({ ownerId: gymData.ownerId });
+            const existingGym = await Gym.findOne({ ownerId: ownerObjectId });
             if (existingGym) {
                 throw new Error('A gym already exists for this owner');
             }
 
-            const gym = new Gym(gymData);
+            const gym = new Gym({
+                ...gymData,
+                ownerId: ownerObjectId, // Ensure casted ID is used
+                verificationStatus: 'pending',
+                isActive: false,
+                rating: { average: 0, count: 0 }
+            });
+
+            console.log("Saving gym to DB...");
             await gym.save();
+            console.log("✅ Gym saved successfully");
             return gym;
-        } catch (error) {
+        } catch (error: any) {
+            console.error("❌ Gym Creation Error:", error.message);
+            if (error.name === 'ValidationError') {
+                console.error("Validation Details:", JSON.stringify(error.errors, null, 2));
+            }
             throw error;
         }
     },
 
+
     // Get all gyms with optional filters
-    getAllGyms: async (filters: { city?: string; area?: string; status?: string } = {}) => {
+    getAllGyms: async (filters: { city?: string; area?: string; isActive?: boolean } = {}) => {
         try {
             const query: any = {};
 
-            if (filters.city) query.city = new RegExp(filters.city, 'i');
-            if (filters.area) query.area = new RegExp(filters.area, 'i');
-            if (filters.status) query.status = filters.status;
+            if (filters.city) query['address.city'] = new RegExp(filters.city, 'i');
+            if (filters.area) query['address.area'] = new RegExp(filters.area, 'i');
+            if (filters.isActive !== undefined) query.isActive = filters.isActive;
 
             const gyms = await Gym.find(query).populate('ownerId', 'name email phone');
             return gyms;
@@ -158,16 +192,21 @@ export const gymService = {
         }
     },
 
-    // Update gym status
-    updateGymStatus: async (id: string, status: 'active' | 'suspended' | 'closed') => {
+    // Update gym verification status
+    updateVerificationStatus: async (id: string, status: 'approved' | 'rejected', isActive?: boolean) => {
         try {
             if (!Types.ObjectId.isValid(id)) {
                 throw new Error('Invalid gym ID');
             }
 
+            const update: any = { verificationStatus: status, updatedAt: new Date() };
+            if (isActive !== undefined) update.isActive = isActive;
+            else if (status === 'approved') update.isActive = true;
+            else if (status === 'rejected') update.isActive = false;
+
             const gym = await Gym.findByIdAndUpdate(
                 id,
-                { status, updatedAt: new Date() },
+                update,
                 { new: true, runValidators: true }
             ).populate('ownerId', 'name email phone');
 

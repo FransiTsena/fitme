@@ -5,45 +5,37 @@ export const createGym = async (req: Request, res: Response) => {
     try {
         const {
             ownerId,
-            ownerName,
-            ownerEmail,
-            ownerPhone,
-            gymName,
+            name,
             description,
-            city,
-            area,
-            address,
+            location, // { type: "Point", coordinates: [lng, lat] }
+            address,  // { city, area, street }
+            photos,
             operatingHours,
-            amenities,
-            images
+            amenities
         } = req.body;
 
-        if (!ownerId || !ownerName || !ownerEmail || !city || !area) {
+        if (!ownerId || !name || !location || !address?.city || !address?.area) {
             return res.status(400).json({
                 success: false,
-                message: 'Owner ID, name, email, city, and area are required'
+                message: 'Owner ID, name, location, city, and area are required'
             });
         }
 
         const gymData = {
             ownerId,
-            ownerName,
-            ownerEmail,
-            ownerPhone,
-            gymName,
+            name,
             description,
-            city,
-            area,
+            location,
             address,
+            photos,
             operatingHours,
-            amenities,
-            images
+            amenities
         };
 
         const gym = await gymService.createGym(gymData);
         res.status(201).json({
             success: true,
-            message: 'Gym created successfully',
+            message: 'Gym created successfully. Pending verification.',
             data: gym
         });
     } catch (error: any) {
@@ -56,13 +48,13 @@ export const createGym = async (req: Request, res: Response) => {
 
 export const getAllGyms = async (req: Request, res: Response) => {
     try {
-        const { city, area, status } = req.query;
+        const { city, area, isActive } = req.query;
 
-        const filters: { city?: string; area?: string; status?: string } = {};
+        const filters: { city?: string; area?: string; isActive?: boolean } = {};
 
         if (city) filters.city = city as string;
         if (area) filters.area = area as string;
-        if (status) filters.status = status as string;
+        if (isActive !== undefined) filters.isActive = isActive === 'true';
 
         const gyms = await gymService.getAllGyms(filters);
         res.status(200).json({
@@ -176,10 +168,10 @@ export const deleteGym = async (req: Request, res: Response) => {
     }
 };
 
-export const updateGymStatus = async (req: Request, res: Response) => {
+export const updateGymVerificationStatus = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
-        const { status } = req.body;
+        const { status, isActive } = req.body;
 
         if (!id) {
             return res.status(400).json({
@@ -188,17 +180,17 @@ export const updateGymStatus = async (req: Request, res: Response) => {
             });
         }
 
-        if (!['active', 'suspended', 'closed'].includes(status)) {
+        if (!['approved', 'rejected'].includes(status)) {
             return res.status(400).json({
                 success: false,
-                message: 'Invalid status. Must be active, suspended, or closed'
+                message: 'Invalid status. Must be approved or rejected'
             });
         }
 
-        const gym = await gymService.updateGymStatus(id, status);
+        const gym = await gymService.updateVerificationStatus(id, status, isActive);
         res.status(200).json({
             success: true,
-            message: `Gym status updated to ${status}`,
+            message: `Gym verification status updated to ${status}`,
             data: gym
         });
     } catch (error: any) {
