@@ -1,5 +1,7 @@
 import "dotenv/config";
+// Force restart
 import express from "express";
+
 import cors from "cors";
 import path from "path";
 import mongoose from "mongoose";
@@ -8,6 +10,8 @@ import { toNodeHandler } from "better-auth/node";
 import { auth } from "./utils/auth.js";
 import userRoutes from "./routes/user.js";
 import gymRoutes from "./routes/gym.js";
+import membershipRoutes from "./routes/membership.js";
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -51,6 +55,10 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 // API Routes
 app.use("/api/users", userRoutes);
 app.use("/api/gyms", gymRoutes);
+console.log("🛠️ Registering /api/memberships route...");
+app.use("/api/memberships", membershipRoutes);
+
+
 
 // Health check endpoint
 app.get("/api/health", (req, res) => {
