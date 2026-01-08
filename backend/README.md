@@ -77,7 +77,13 @@ All protected routes require a Bearer token:
 | `POST` | `/api/gyms` | No* | Create initial gym profile. |
 | `PUT` | `/api/gyms/:id` | No* | Update gym details (e.g., add photo URLs). |
 | `GET` | `/api/gyms/owner/:ownerId` | Yes | Get gym details for a specific owner. |
+| `POST` | `/api/memberships` | No* | **NEW**: Create a membership plan. |
+| `PUT` | `/api/memberships/:id` | No* | **NEW**: Update plan details (title, price, etc). |
+| `PATCH` | `/api/memberships/:id/status` | No* | **NEW**: Toggle active status (disable/enable). |
+| `GET` | `/api/memberships/gym/:gymId` | No | Get public plans for a gym. |
+
 | `GET` | `/api/users/verified-gyms` | No | Public list of all `approved` and `active` gyms. |
+
 
 > [!NOTE]
 > *Routes marked with "No*" are currently open for integration testing but will require authentication in production.*
