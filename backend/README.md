@@ -87,7 +87,15 @@ All protected routes require a Bearer token:
 | `PUT` | `/api/training-sessions/:id` | No* | **NEW**: Update session details. |
 | `PATCH` | `/api/training-sessions/:id/status` | No* | **NEW**: Toggle active status. |
 | `GET` | `/api/training-sessions/gym/:gymId` | No | Get public sessions for a gym. |
+| `POST` | `/api/subscriptions/purchase` | No* | **NEW**: Purchase a membership plan. |
+| `GET` | `/api/subscriptions/my` | No | Get current user's memberships. |
+| `POST` | `/api/bookings/book` | No* | **NEW**: Book a training session. |
+| `GET` | `/api/bookings/my` | No | Get current user's session bookings. |
+| `GET` | `/api/analytics/gym/:gymId` | No | **NEW**: Get Owner Analytics Dashboard. |
+| `GET` | `/api/analytics/trainer` | No | **NEW**: Get Trainer Analytics Dashboard. |
 | `GET` | `/api/memberships/gym/:gymId` | No | Get public plans for a gym. |
+
+
 
 
 

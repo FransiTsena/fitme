@@ -181,3 +181,59 @@ Store the `data._id` (Gym ID) from the response. You will need it for Step 2.
 ### 3. Disable/Enable Session
 - **Endpoint**: `PATCH /api/training-sessions/:id/status`
 - **Body**: `{ "isActive": false }`
+
+---
+
+## 💳 Step 7: Membership Purchase (Member)
+**Goal**: Members purchase a plan to access the gym.
+
+### 1. Purchase Plan
+- **Endpoint**: `POST /api/subscriptions/purchase`
+- **Body**: `{ "planId": "PLAN_ID", "userId": "ID" }`
+- **Logic**: Enforces **one active membership** per gym rule.
+
+### 2. Get My Memberships
+- **Endpoint**: `GET /api/subscriptions/my?userId=...`
+- **Display**: Show active memberships with `startDate` and `endDate`.
+
+---
+
+## 📅 Step 8: Session Booking (Member)
+**Goal**: Members book a specific trainer session.
+
+### 1. Book Session
+- **Endpoint**: `POST /api/bookings/book`
+- **Body**:
+  ```json
+  {
+    "userId": "ID",
+    "sessionId": "SESSION_ID",
+    "date": "2024-01-01",
+    "timeSlot": "10:00-11:00"
+  }
+  ```
+- **Error Handling**: 
+  - If 400 "Active gym membership required": Prompt user to buy a plan.
+  - If 400 "Trainer not available": Ask to pick another slot.
+
+### 2. Get My Bookings
+- **Endpoint**: `GET /api/bookings/my?userId=...`
+
+---
+
+## 📊 Step 9: Analytics Dashboards
+
+### 1. Gym Owner Dashboard
+- **Endpoint**: `GET /api/analytics/gym/:gymId`
+- **Data**:
+    - `gymPerformance`: Active members, New members.
+    - `revenue`: Total revenue, Breakdown by type (membership vs session).
+    - `trainers`: Active trainer count.
+    - `insights`: Peak usage days.
+
+### 2. Trainer Dashboard
+- **Endpoint**: `GET /api/analytics/trainer?userId=...`
+- **Data**:
+    - `performance`: Rating avg/count.
+    - `sessions`: Total conducted, Upcoming, Cancelled, Completion Rate.
+    - `clients`: Unique client count, Retention rate (repeat clients).
