@@ -33,9 +33,11 @@ export const subscriptionService = {
             amount: plan.price,
             currency: "ETB",
             status: "completed",
-            method: "in-app"
+            method: "in-app",
+            type: "membership"
         });
         await payment.save();
+
 
         // 4. Calculate Dates
         const startDate = new Date();

@@ -91,7 +91,10 @@ All protected routes require a Bearer token:
 | `GET` | `/api/subscriptions/my` | No | Get current user's memberships. |
 | `POST` | `/api/bookings/book` | No* | **NEW**: Book a training session. |
 | `GET` | `/api/bookings/my` | No | Get current user's session bookings. |
+| `GET` | `/api/analytics/gym/:gymId` | No | **NEW**: Get Owner Analytics Dashboard. |
+| `GET` | `/api/analytics/trainer` | No | **NEW**: Get Trainer Analytics Dashboard. |
 | `GET` | `/api/memberships/gym/:gymId` | No | Get public plans for a gym. |
+
 
 
 

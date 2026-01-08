@@ -45,9 +45,11 @@ export const sessionBookingService = {
             amount: session.price,
             currency: "ETB", 
             status: "completed",
-            method: "in-app"
+            method: "in-app",
+            type: "session"
         });
         await payment.save();
+
 
         // 5. Create Booking
         const booking = new SessionBooking({

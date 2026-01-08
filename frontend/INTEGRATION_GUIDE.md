@@ -218,3 +218,22 @@ Store the `data._id` (Gym ID) from the response. You will need it for Step 2.
 
 ### 2. Get My Bookings
 - **Endpoint**: `GET /api/bookings/my?userId=...`
+
+---
+
+## 📊 Step 9: Analytics Dashboards
+
+### 1. Gym Owner Dashboard
+- **Endpoint**: `GET /api/analytics/gym/:gymId`
+- **Data**:
+    - `gymPerformance`: Active members, New members.
+    - `revenue`: Total revenue, Breakdown by type (membership vs session).
+    - `trainers`: Active trainer count.
+    - `insights`: Peak usage days.
+
+### 2. Trainer Dashboard
+- **Endpoint**: `GET /api/analytics/trainer?userId=...`
+- **Data**:
+    - `performance`: Rating avg/count.
+    - `sessions`: Total conducted, Upcoming, Cancelled, Completion Rate.
+    - `clients`: Unique client count, Retention rate (repeat clients).

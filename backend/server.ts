@@ -15,6 +15,8 @@ import trainerRoutes from "./routes/trainer.js";
 import trainingSessionRoutes from "./routes/trainingSession.js";
 import subscriptionRoutes from "./routes/subscription.js";
 import bookingRoutes from "./routes/booking.js";
+import analyticsRoutes from "./routes/analytics.js";
+
 
 
 
@@ -69,6 +71,8 @@ app.use("/api/trainers", trainerRoutes);
 app.use("/api/training-sessions", trainingSessionRoutes);
 app.use("/api/subscriptions", subscriptionRoutes);
 app.use("/api/bookings", bookingRoutes);
+app.use("/api/analytics", analyticsRoutes);
+
 
 
 
