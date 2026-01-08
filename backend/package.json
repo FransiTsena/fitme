@@ -12,6 +12,7 @@
     "test:upload": "tsx test/upload.test.ts",
     "test:membership": "tsx test/membership.test.ts", 
     "test:trainer": "tsx test/trainer.test.ts",
+    "test:analytics": "tsx test/analytics.test.ts",
     "test:session": "tsx test/training_session.test.ts",
     "test:booking": "tsx test/booking.test.ts",
     "test:owner": "tsx test/owner.test.ts",
