@@ -80,7 +80,11 @@ All protected routes require a Bearer token:
 | `POST` | `/api/memberships` | No* | **NEW**: Create a membership plan. |
 | `PUT` | `/api/memberships/:id` | No* | **NEW**: Update plan details (title, price, etc). |
 | `PATCH` | `/api/memberships/:id/status` | No* | **NEW**: Toggle active status (disable/enable). |
+| `GET` | `/api/trainers/search` | No | Search members by email/phone/name (`?q=query`). |
+| `POST` | `/api/trainers/invite` | No* | Invite a member to become a trainer (sends email). |
+| `POST` | `/api/trainers/accept-invite` | No | Accept invitation using the email token. |
 | `GET` | `/api/memberships/gym/:gymId` | No | Get public plans for a gym. |
+
 
 | `GET` | `/api/users/verified-gyms` | No | Public list of all `approved` and `active` gyms. |
 
