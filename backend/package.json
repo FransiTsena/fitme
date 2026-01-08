@@ -10,6 +10,7 @@
     "test:auth": "tsx test/auth.test.ts",
     "test:flow": "tsx test/flow.test.ts",
     "test:upload": "tsx test/upload.test.ts",
+    "test:membership": "tsx test/membership.test.ts", 
     "test:owner": "tsx test/owner.test.ts",
     "test:gym_reg": "tsx test/gym_reg.test.ts",
     "migrate:phases": "node scripts/migratePhases.js",
