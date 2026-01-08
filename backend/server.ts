@@ -11,6 +11,8 @@ import { auth } from "./utils/auth.js";
 import userRoutes from "./routes/user.js";
 import gymRoutes from "./routes/gym.js";
 import membershipRoutes from "./routes/membership.js";
+import trainerRoutes from "./routes/trainer.js";
+
 
 
 const __filename = fileURLToPath(import.meta.url);
@@ -57,6 +59,8 @@ app.use("/api/users", userRoutes);
 app.use("/api/gyms", gymRoutes);
 console.log("🛠️ Registering /api/memberships route...");
 app.use("/api/memberships", membershipRoutes);
+app.use("/api/trainers", trainerRoutes);
+
 
 
 
