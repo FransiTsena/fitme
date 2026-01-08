@@ -23,34 +23,69 @@ const testUser = {
 };
 
 async function runUploadTest() {
-    console.log("🚀 Starting Open Cloudinary Upload Test (Unauthenticated)...");
+    console.log("🚀 Starting Full Gym Verification Test (Authenticated + Gym Creation)...");
 
     try {
-        // 1. Prepare File
-        console.log("\n1. Preparing Image File...");
+        // 1. Register Owner
+        console.log("\n1. Registering Owner...");
+        try {
+            await axios.post(`${AUTH_URL}/sign-up/email`, testUser);
+        } catch (e) {
+            console.log("Note: User might already exist, proceeding...");
+        }
+
+        // 2. Login
+        console.log("\n2. Logging in...");
+        const signInRes = await axios.post(`${AUTH_URL}/sign-in/email`, {
+            email: testUser.email,
+            password: testUser.password
+        });
+        const token = signInRes.data.token;
+        const userId = signInRes.data.user.id;
+        console.log(`✅ Login Successful! Token retrieved: ${token?.substring(0, 10)}...`);
+
+        // 3. Create a Gym for this owner (Required for the new flow)
+        console.log("\n3. Creating Gym Profile...");
+        try {
+            await axios.post(`${API_URL.replace('/users', '/gyms')}`, {
+                ownerId: userId,
+                ownerName: testUser.name,
+                ownerEmail: testUser.email,
+                city: "Test City",
+                area: "Test Area"
+            }, {
+                headers: { "Authorization": `Bearer ${token}` }
+            });
+            console.log("✅ Gym Profile Created!");
+        } catch (e: any) {
+            console.log("Note: Gym might already exist or creation failed:", e.response?.data?.message || e.message);
+        }
+
+        // 4. Prepare Image File
+        console.log("\n4. Preparing Image File...");
         const testFilePath = path.join(__dirname, "image.png");
-        
         if (!fs.existsSync(testFilePath)) {
             throw new Error(`Test image not found at ${testFilePath}`);
         }
 
-        // 2. Upload File
-        console.log("\n2. Uploading image.png to Cloudinary (Open Route)...");
+        // 5. Upload File
+        console.log("\n5. Uploading image.png as 'document' to Cloudinary...");
         const form = new FormData();
-        form.append("documents", fs.createReadStream(testFilePath));
+        form.append("document", fs.createReadStream(testFilePath));
 
         const uploadRes = await axios.post(`${API_URL}/upload-documents`, form, {
             headers: {
-                ...form.getHeaders()
+                ...form.getHeaders(),
+                "Authorization": `Bearer ${token}`
             }
         });
 
         console.log("✅ Upload Successful!");
         console.log("Response Message:", uploadRes.data.message);
-        console.log("Cloudinary URLs:", uploadRes.data.documents);
+        console.log("Verified Document URL:", uploadRes.data.document);
 
-        if (uploadRes.data.documents && uploadRes.data.documents[0].includes("cloudinary.com")) {
-            console.log("✨ SUCCESS: Verified Cloudinary URL for image!");
+        if (uploadRes.data.document && uploadRes.data.document.includes("cloudinary.com")) {
+            console.log("✨ SUCCESS: Verified Cloudinary URL for single document!");
         } else {
             console.error("❌ FAILURE: Response did not contain a Cloudinary URL.");
         }
