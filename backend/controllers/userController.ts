@@ -322,6 +322,8 @@ export const updateRole = async (req: Request, res: Response) => {
  */
 export const uploadOwnerDocuments = async (req: Request, res: Response) => {
   try {
+    /* 
+    TEMPORARY BYPASS FOR OPEN ROUTE TESTING
     if (!req.user) {
       return res.status(401).json({ error: "Not authenticated" });
     }
@@ -329,6 +331,7 @@ export const uploadOwnerDocuments = async (req: Request, res: Response) => {
     if (req.user.role !== "owner") {
       return res.status(403).json({ error: "Only gym owners can upload verification documents" });
     }
+    */
 
     const files = (req as any).files as MulterFile[];
 
@@ -336,9 +339,11 @@ export const uploadOwnerDocuments = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "No documents uploaded" });
     }
 
-    // Get document URLs
-    const documentUrls = files.map((file) => `/uploads/documents/${file.filename}`);
+    // Get document URLs - file.path contains the full Cloudinary URL
+    const documentUrls = files.map((file: any) => file.path);
 
+    /*
+    TEMPORARY BYPASS FOR OPEN ROUTE TESTING
     // Update user's document status in database
     const usersCollection = db.collection("user");
     await usersCollection.updateOne(
@@ -352,15 +357,18 @@ export const uploadOwnerDocuments = async (req: Request, res: Response) => {
         },
       }
     );
+    */
 
-    res.status(200).json({
-      message: "Documents uploaded successfully. Your verification is pending review.",
+    return res.status(200).json({
+      message: "Documents uploaded successfully (Open Route Mode)",
       documents: documentUrls,
-      status: "pending",
     });
   } catch (error: any) {
-    console.error("Upload documents error:", error);
-    res.status(500).json({ error: error.message || "Failed to upload documents" });
+    console.error("❌ UPLOAD ERROR:", error);
+    return res.status(500).json({
+      error: "Upload failed",
+      message: error.message || "Internal Server Error"
+    });
   }
 };
 

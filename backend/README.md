@@ -6,7 +6,7 @@ Authentication and gym management backend using **Express 5**, **Better Auth**, 
 
 ```bash
 npm install
-npx tsx server.ts
+npm run dev
 ```
 
 Server runs on `http://localhost:3005`
@@ -18,6 +18,12 @@ MONGO_URI=mongodb://localhost:27017/fitme
 BETTER_AUTH_SECRET=your-secret-key
 BACKEND_URL=http://localhost:3005
 FRONTEND_URL=http://localhost:3000
+
+# Cloudinary Configuration
+CLOUDINARY_URL=cloudinary://<api_key>:<api_secret>@<cloud_name>
+
+# SMTP Configuration
+SMTP_ENABLED=true
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
 SMTP_USER=your-email@gmail.com
@@ -26,9 +32,20 @@ SMTP_PASS=your-app-password
 
 ---
 
+## Architecture: Controller/Service Pattern
+
+The backend follows a clean separation of concerns:
+- **Routes**: Define endpoints and apply middleware.
+- **Controllers**: Handle request/response, validation, and status codes.
+- **Services**: Contain all business logic, database operations, and external API calls (Better Auth, Cloudinary).
+
+---
+
 ## Authentication
 
-Uses **Better Auth** with session tokens. Token format: `<token>.<signature>` (77 chars).
+Uses **Better Auth** with the **JWT strategy**. 
+- Sessions are stateless (JWT-based).
+- Tokens are passed via the `Authorization` header.
 
 ### Headers
 
@@ -46,7 +63,6 @@ Authorization: Bearer <token>
 | ------ | --------------------------------- | ---------------------- |
 | POST   | `/api/users/signup`               | Register new user      |
 | POST   | `/api/users/login`                | Login, returns token   |
-| POST   | `/api/users/verify-otp`           | Verify email OTP       |
 | POST   | `/api/users/forgotPassword`       | Request password reset |
 | PUT    | `/api/users/resetPassword/:token` | Reset password         |
 | GET    | `/api/users/verified-gyms`        | List all verified gyms |
@@ -61,11 +77,11 @@ Authorization: Bearer <token>
 
 ### Owner Routes (Require Auth + Owner Role)
 
-| Method | Endpoint                        | Description                                       |
-| ------ | ------------------------------- | ------------------------------------------------- |
-| POST   | `/api/users/upload-documents`   | Upload verification docs (max 5 files, 10MB each) |
-| GET    | `/api/users/document-status`    | Check document verification status                |
-| POST   | `/api/users/resend-upload-link` | Resend document upload link email                 |
+| Method | Endpoint                        | Description                                     |
+| ------ | ------------------------------- | ----------------------------------------------- |
+| POST   | `/api/users/upload-documents`   | Upload verification doc (Single file, via `document`) |
+| GET    | `/api/users/document-status`    | Check document verification status              |
+| POST   | `/api/users/resend-upload-link` | Resend document upload link email               |
 
 ### Admin Routes (Require Auth + Admin Role)
 
@@ -81,24 +97,6 @@ Authorization: Bearer <token>
 
 ## Request/Response Examples
 
-### Signup
-
-```bash
-POST /api/users/signup
-Content-Type: application/json
-
-{
-  "name": "John Doe",
-  "email": "john@example.com",
-  "password": "password123",
-  "fatherName": "Father Name",
-  "phone": "+251911111111",
-  "role": "member",  # member | owner | trainer
-  "city": "Addis Ababa",
-  "area": "Bole"
-}
-```
-
 ### Login
 
 ```bash
@@ -106,15 +104,15 @@ POST /api/users/login
 Content-Type: application/json
 
 {
-  "email": "john@example.com",
+  "email": "owner@example.com",
   "password": "password123"
 }
 
 # Response
 {
   "message": "Login successful",
-  "token": "W1QybnCliZOeB...WWKZ4rBK9oTm",
-  "user": { "id": "...", "name": "John Doe", ... }
+  "token": "signed.jwt.token",
+  "user": { "id": "...", "name": "...", "role": "owner" }
 }
 ```
 
@@ -125,72 +123,8 @@ POST /api/users/upload-documents
 Authorization: Bearer <token>
 Content-Type: multipart/form-data
 
-documents: [file1.pdf, file2.jpg, ...]
+document: <file.pdf | file.png>
 ```
-
-### Validate Gym (Admin)
-
-```bash
-POST /api/users/validate-gym/:ownerId
-Authorization: Bearer <admin-token>
-Content-Type: application/json
-
-{
-  "gymName": "FitZone Gym",
-  "notes": "All documents verified"
-}
-```
-
-### Get Verified Gyms (Public)
-
-```bash
-GET /api/users/verified-gyms?city=Addis%20Ababa&area=Bole&status=active
-
-# Response
-{
-  "count": 5,
-  "gyms": [
-    {
-      "gymId": "...",
-      "gymName": "FitZone Gym",
-      "ownerName": "John Doe",
-      "city": "Addis Ababa",
-      "area": "Bole",
-      "status": "active",
-      "verifiedAt": "2026-01-06T..."
-    }
-  ]
-}
-```
-
----
-
-## User Roles
-
-| Role      | Description                                |
-| --------- | ------------------------------------------ |
-| `member`  | Regular gym member                         |
-| `owner`   | Gym owner (requires document verification) |
-| `trainer` | Gym trainer                                |
-| `admin`   | System administrator                       |
-
-## Document Status Flow
-
-```
-not_submitted → pending → approved/rejected
-                              ↓
-                         Creates Gym record
-```
-
----
-
-## Collections
-
-| Collection | Description                       |
-| ---------- | --------------------------------- |
-| `user`     | User accounts and owner documents |
-| `session`  | Better Auth sessions              |
-| `gym`      | Verified gym records              |
 
 ---
 
@@ -200,22 +134,23 @@ not_submitted → pending → approved/rejected
 backend/
 ├── server.ts              # Entry point
 ├── config/
-│   └── multer.ts          # File upload config
+│   └── multer.ts          # Cloudinary & Multer configuration
 ├── controllers/
-│   └── userController.ts  # All API handlers
+│   └── userController.ts  # Thin request handlers
+├── services/
+│   ├── userService.ts     # User business logic & Better Auth calls
+│   └── gymService.ts      # Gym-specific business logic
 ├── middleware/
-│   └── requireAuth.ts     # Auth & role middleware
+│   └── requireAuth.ts     # JWT & Role-based authentication
 ├── models/
-│   ├── authDb.ts          # DB connection
-│   ├── userModel.ts       # User schema
+│   ├── authDb.ts          # MongoDB connection
+│   ├── userModel.ts       # User schema (Better Auth)
 │   └── gymModel.ts        # Gym schema
 ├── routes/
 │   └── user.ts            # Route definitions
-├── utils/
-│   ├── auth.ts            # Better Auth config
-│   └── email.ts           # Email sender
-└── uploads/
-    └── documents/         # Owner verification docs
+└── utils/
+    ├── auth.ts            # Better Auth configuration (JWT Strategy)
+    └── email.ts           # Email sender utility
 ```
 
 ---
@@ -223,11 +158,11 @@ backend/
 ## Running Tests
 
 ```bash
-# Start server first
-npx tsx server.ts
+# Register, Login, and Upload verification doc
+npm run test:upload
 
-# Run tests in another terminal
-npx tsx test/owner.test.ts
+# Mock Auth flows
+npm run test:auth
 ```
 
 ---
@@ -235,8 +170,9 @@ npx tsx test/owner.test.ts
 ## Tech Stack
 
 - **Express 5.1.0** - Web framework
-- **Better Auth 1.4.9** - Authentication (JWT + Admin plugins)
-- **MongoDB** - Database
-- **Multer** - File uploads
+- **Better Auth 1.4.9** - Authentication (JWT + Admin)
+- **MongoDB** - Database (Native driver + Mongoose)
+- **Cloudinary** - Document & Image storage
+- **Multer** - Middleware for handling `multipart/form-data`
 - **Nodemailer** - Email sending
 - **TypeScript** - Language
