@@ -1,16 +1,111 @@
 import { Logo } from '@/components/Logo';
 import { Ionicons } from '@expo/vector-icons';
-import { Stack } from 'expo-router';
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Stack, router } from 'expo-router';
+import { Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 import { AdCarousel } from '@/components/AdCarousel';
 import { GymCard } from '@/components/GymCard';
 import { UserBottomNav } from '@/components/UserBottomNav';
 import { ThemedText } from '@/components/themed-text';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import { useAuth } from '@/context/AuthContext';
+import React, { useEffect, useState } from 'react';
 
 
 export default function TabTwoScreen() {
+  const { user } = useAuth();
+  const [gyms, setGyms] = useState<any[]>([]);
+  const [filteredGyms, setFilteredGyms] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [useLocation, setUseLocation] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
+  const [sortBy, setSortBy] = useState('distance'); // 'distance', 'rating', 'name'
+  
+  // Fetch gyms from API
+  useEffect(() => {
+    const fetchGyms = async () => {
+      try {
+        let response;
+        
+        if (useLocation) {
+          // For now, we'll use dummy coordinates for testing nearby functionality
+          // In a real app, we would get the user's actual location
+          const dummyLat = 9.018336;
+          const dummyLng = 38.74687;
+          
+          response = await fetch(`${process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000'}/gyms/nearby?latitude=${dummyLat}&longitude=${dummyLng}&maxDistance=10`, {
+            headers: {
+              'Authorization': `Bearer ${user?.token}`,
+              'Content-Type': 'application/json',
+            },
+          });
+        } else {
+          response = await fetch(`${process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000'}/gyms`, {
+            headers: {
+              'Authorization': `Bearer ${user?.token}`,
+              'Content-Type': 'application/json',
+            },
+          });
+        }
+        
+        if (response.ok) {
+          const data = await response.json();
+          const gymData = data.data || data.gyms || [];
+          setGyms(gymData);
+          setFilteredGyms(gymData);
+        } else {
+          console.error('Failed to fetch gyms:', response.status, response.statusText);
+          setGyms([]);
+          setFilteredGyms([]);
+        }
+      } catch (error) {
+        console.error('Error fetching gyms:', error);
+        setGyms([]);
+        setFilteredGyms([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchGyms();
+  }, [user?.token, useLocation]);
+  
+  // Apply search and filters
+  useEffect(() => {
+    let result = [...gyms];
+    
+    // Apply search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(gym => 
+        (gym.name && gym.name.toLowerCase().includes(query)) ||
+        (gym.address && gym.address.city && gym.address.city.toLowerCase().includes(query)) ||
+        (gym.address && gym.address.area && gym.address.area.toLowerCase().includes(query))
+      );
+    }
+    
+    // Apply sorting
+    if (sortBy === 'rating') {
+      result.sort((a, b) => (b.rating?.average || 0) - (a.rating?.average || 0));
+    } else if (sortBy === 'name') {
+      result.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+    } else { // distance or default
+      // For now, we'll sort by name since we don't have exact distance data
+      result.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+    }
+    
+    setFilteredGyms(result);
+  }, [searchQuery, sortBy, gyms]);
+  
+  const toggleLocationFilter = () => {
+    setUseLocation(!useLocation);
+  };
+  
+  const handleGymPress = (gymId: string) => {
+    router.push({pathname: '/member/gym-details', params: {id: gymId}});
+  };
+  
   return (
     <ProtectedRoute>
       <View style={{ flex: 1, backgroundColor: '#000' }}>
@@ -62,20 +157,29 @@ export default function TabTwoScreen() {
             {/* Search Bar */}
             <View style={styles.searchBarContainer}>
               <Ionicons name="search" size={20} color="#888" />
-              <Text style={styles.searchText}>Search member...</Text>
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Search gyms..."
+                placeholderTextColor="#888"
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+              />
               <View style={{ flex: 1 }} />
-              <Text style={styles.resultCount}>99 results</Text>
+              <Text style={styles.resultCount}>{filteredGyms.length} results</Text>
             </View>
 
             <View style={styles.filterRow}>
-              <View style={styles.filterBtn}>
+              <TouchableOpacity style={styles.filterBtn} onPress={() => setShowFilters(!showFilters)}>
                 <Text style={styles.filterText}>Filter</Text>
                 <Ionicons name="chevron-down" size={12} color="#fff" />
-              </View>
-              <View style={styles.filterBtn}>
-                <Text style={styles.filterText}>Sort</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.filterBtn} onPress={() => {
+                const newSortOrder = sortBy === 'rating' ? 'name' : sortBy === 'name' ? 'distance' : 'rating';
+                setSortBy(newSortOrder);
+              }}>
+                <Text style={styles.filterText}>Sort: {sortBy}</Text>
                 <Ionicons name="chevron-down" size={12} color="#fff" />
-              </View>
+              </TouchableOpacity>
             </View>
           </View>
 
@@ -83,8 +187,8 @@ export default function TabTwoScreen() {
           <View style={styles.contentContainer}>
             {/* Near Me Button - Positioned normally now to avoid overlap */}
             <View style={styles.nearMeContainer}>
-              <TouchableOpacity style={styles.nearMeBtnList}>
-                <Text style={styles.nearMeText}>Near Me</Text>
+              <TouchableOpacity style={[styles.nearMeBtnList, useLocation && styles.activeNearMeBtn]} onPress={toggleLocationFilter}>
+                <Text style={styles.nearMeText}>Near Me {useLocation ? 'ON' : 'OFF'}</Text>
               </TouchableOpacity>
             </View>
 
@@ -92,38 +196,23 @@ export default function TabTwoScreen() {
 
             <ThemedText type="subtitle" style={{ marginBottom: 10 }}>Featured Gyms</ThemedText>
 
-            <GymCard
-              name="Muscles Gym"
-              rating={4.8}
-              reviews={500}
-              distance="1.2 km"
-              price="12,000birr"
-              imageFn={() => require('@/assets/images/gym-1.png')}
-            />
-            <GymCard
-              name="Power House"
-              rating={4.5}
-              reviews={120}
-              distance="2.5 km"
-              price="8,000birr"
-              imageFn={() => require('@/assets/images/gym-1.png')}
-            />
-            <GymCard
-              name="Fitness First"
-              rating={4.2}
-              reviews={80}
-              distance="5.0 km"
-              price="6,000birr"
-              imageFn={() => require('@/assets/images/gym-1.png')}
-            />
-            <GymCard
-              name="Gold's Gym"
-              rating={4.9}
-              reviews={1000}
-              distance="0.8 km"
-              price="15,000birr"
-              imageFn={() => require('@/assets/images/gym-1.png')}
-            />
+            {loading ? (
+              <ThemedText type="default">Loading gyms...</ThemedText>
+            ) : filteredGyms.length > 0 ? (
+              filteredGyms.map((gym) => (
+                <TouchableOpacity key={gym._id} onPress={() => handleGymPress(gym._id)}>
+                  <GymCard
+                    name={gym.name || "Unknown Gym"}
+                    rating={gym.rating?.average || 0}
+                    reviews={gym.rating?.count || 0}
+                    distance="N/A"  // Actual distance calculation would require user location
+                    price={gym.price ? `${gym.price} birr` : "N/A"}
+                  />
+                </TouchableOpacity>
+              ))
+            ) : (
+              <ThemedText type="default">No gyms found</ThemedText>
+            )}
 
             <View style={{ height: 100 }} />
           </View>
@@ -168,6 +257,11 @@ const styles = StyleSheet.create({
   },
   searchText: {
     color: '#666',
+  },
+  searchInput: {
+    color: '#fff',
+    fontSize: 16,
+    flex: 1,
   },
   resultCount: {
     color: '#666',
@@ -234,6 +328,8 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
     fontSize: 14,
-
+  },
+  activeNearMeBtn: {
+    backgroundColor: '#ff5500', // Darker orange when active
   }
 });

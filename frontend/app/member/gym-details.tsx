@@ -123,7 +123,7 @@ export default function GymDetailsScreen() {
                         <View style={styles.ratingContainer}>
                             <Ionicons name="star" size={16} color="#ff8c2b" />
                             <Text style={styles.ratingText}>
-                                {gym.rating?.average ? gym.rating.average.toFixed(1) : 'N/A'} 
+                                {gym.rating?.average ? gym.rating.average.toFixed(1) : 'N/A'}
                                 {' '}({gym.rating?.count || 0})
                             </Text>
                         </View>

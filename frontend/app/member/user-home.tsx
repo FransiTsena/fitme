@@ -229,25 +229,25 @@ function CustomCalendar() {
 export default function UserHomeScreen() {
     const { user } = useAuth();
     const userRole = user?.role;
-    
+
     // State for gyms
     const [gyms, setGyms] = useState<any[]>([]);
     const [loadingGyms, setLoadingGyms] = useState(true);
     const [useLocation, setUseLocation] = useState(false); // Toggle between all gyms and nearby gyms
     const [locationError, setLocationError] = useState<string | null>(null);
-    
+
     // Fetch gyms from API
     useEffect(() => {
         const fetchGyms = async () => {
             try {
                 let response;
-                
+
                 if (useLocation) {
                     // For now, we'll use dummy coordinates for testing nearby functionality
                     // In a real app, we would get the user's actual location
                     const dummyLat = 9.018336;
                     const dummyLng = 38.74687;
-                    
+
                     response = await fetch(`${process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000'}/gyms/nearby?latitude=${dummyLat}&longitude=${dummyLng}&maxDistance=10`, {
                         headers: {
                             'Authorization': `Bearer ${user?.token}`,
@@ -262,7 +262,7 @@ export default function UserHomeScreen() {
                         },
                     });
                 }
-                
+
                 if (response.ok) {
                     const data = await response.json();
                     setGyms(data.data || data.gyms || []);
@@ -277,7 +277,7 @@ export default function UserHomeScreen() {
                 setLoadingGyms(false);
             }
         };
-        
+
         fetchGyms();
     }, [user?.token, useLocation]);
 
@@ -488,7 +488,7 @@ export default function UserHomeScreen() {
                 {/* Nearby Gyms */}
                 <View style={styles.sectionHeader}>
                     <Text style={styles.sectionTitle}>{useLocation ? 'Nearby Gyms' : 'All Gyms'}</Text>
-                    <View style={{flexDirection: 'row', gap: 15}}>
+                    <View style={{ flexDirection: 'row', gap: 15 }}>
                         <TouchableOpacity onPress={() => setUseLocation(!useLocation)}>
                             <Text style={styles.seeAllText}>{useLocation ? 'Show All' : 'Show Nearby'}</Text>
                         </TouchableOpacity>
@@ -500,12 +500,12 @@ export default function UserHomeScreen() {
 
                 {loadingGyms ? (
                     <View style={styles.loadingContainer}>
-                        <Ionicons name="refresh" size={24} color="#ff8c2b" style={{marginRight: 10}} />
+                        <Ionicons name="refresh" size={24} color="#ff8c2b" style={{ marginRight: 10 }} />
                         <Text style={styles.loadingText}>Loading {useLocation ? 'nearby' : 'all'} gyms...</Text>
                     </View>
                 ) : gyms.length > 0 ? (
                     gyms.map((gym) => (
-                        <TouchableOpacity key={gym._id} onPress={() => router.push({pathname: '/member/gym-details', params: {id: gym._id}})}>
+                        <TouchableOpacity key={gym._id} onPress={() => router.push({ pathname: '/member/gym-details', params: { id: gym._id } })}>
                             <GymCard
                                 name={gym.name || "Unknown Gym"}
                                 rating={gym.rating?.average || 0}

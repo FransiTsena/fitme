@@ -60,7 +60,7 @@ export const gymService = {
     createGym: async (gymData: CreateGymData) => {
         try {
             console.log("Creating gym for owner ID:", gymData.ownerId);
-            
+
             // Explicitly cast and validate ownerId
             let ownerObjectId: Types.ObjectId;
             try {
@@ -196,7 +196,7 @@ export const gymService = {
     getNearbyGyms: async (latitude: number, longitude: number, maxDistanceKm: number = 10) => {
         try {
             const maxDistanceInMeters = maxDistanceKm * 1000; // Convert km to meters
-            
+
             const gyms = await Gym.find({
                 location: {
                     $near: {
@@ -210,7 +210,7 @@ export const gymService = {
                 isActive: true, // Only return active gyms
                 verificationStatus: 'approved' // Only return approved gyms
             }).populate('ownerId', 'name email phone');
-            
+
             return gyms;
         } catch (error) {
             throw error;
