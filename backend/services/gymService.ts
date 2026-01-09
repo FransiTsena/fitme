@@ -1,6 +1,8 @@
 import { Types } from 'mongoose';
 import { Gym } from '../models/gymModel.js';
 import { User } from '../models/userModel.js';
+import { UserMembership } from '../models/userMembershipModel.js';
+import { Trainer } from '../models/trainerModel.js';
 
 interface CreateGymData {
     ownerId: string;
@@ -215,6 +217,117 @@ export const gymService = {
             }
 
             return gym;
+        } catch (error) {
+            throw error;
+        }
+    },
+
+    // Get all members of a gym
+    getGymMembers: async (gymId: string, filters: { status?: string; search?: string } = {}) => {
+        try {
+            if (!Types.ObjectId.isValid(gymId)) {
+                throw new Error('Invalid gym ID');
+            }
+
+            const query: any = { gymId: new Types.ObjectId(gymId) };
+            
+            if (filters.status && filters.status !== 'all') {
+                query.status = filters.status;
+            }
+
+            const memberships = await UserMembership.find(query)
+                .populate('userId', 'name email phone profileImage city')
+                .populate('planId', 'title price')
+                .sort({ createdAt: -1 });
+
+            // Filter by search term if provided
+            let members = memberships.map(m => {
+                const user = m.userId as any;
+                const plan = m.planId as any;
+                return {
+                    _id: m._id,
+                    id: m._id,
+                    userId: user?._id,
+                    name: user?.name || 'Unknown',
+                    email: user?.email || '',
+                    phone: user?.phone || '',
+                    profileImage: user?.profileImage || null,
+                    city: user?.city || '',
+                    plan: plan?.title || 'Unknown',
+                    planPrice: plan?.price || 0,
+                    status: m.status,
+                    startDate: m.startDate,
+                    endDate: m.endDate,
+                    joinedAt: m.createdAt,
+                };
+            });
+
+            if (filters.search) {
+                const searchLower = filters.search.toLowerCase();
+                members = members.filter(m => 
+                    m.name.toLowerCase().includes(searchLower) ||
+                    m.email.toLowerCase().includes(searchLower)
+                );
+            }
+
+            return members;
+        } catch (error) {
+            throw error;
+        }
+    },
+
+    // Get all trainers of a gym
+    getGymTrainers: async (gymId: string, filters: { status?: string; search?: string } = {}) => {
+        try {
+            if (!Types.ObjectId.isValid(gymId)) {
+                throw new Error('Invalid gym ID');
+            }
+
+            const query: any = { gymId: new Types.ObjectId(gymId) };
+            
+            if (filters.status === 'active') {
+                query.isActive = true;
+            } else if (filters.status === 'inactive') {
+                query.isActive = false;
+            }
+
+            const trainers = await Trainer.find(query)
+                .populate('userId', 'name email phone profileImage city')
+                .sort({ createdAt: -1 });
+
+            // Transform and filter
+            let trainerList = trainers.map(t => {
+                const user = t.userId as any;
+                return {
+                    _id: t._id,
+                    id: t._id,
+                    trainerId: t._id,
+                    userId: user?._id,
+                    name: user?.name || 'Unknown',
+                    email: user?.email || '',
+                    phone: user?.phone || '',
+                    profileImage: user?.profileImage || null,
+                    city: user?.city || '',
+                    specialization: t.specialization || [],
+                    bio: t.bio || '',
+                    rating: t.rating?.average || 0,
+                    reviewCount: t.rating?.count || 0,
+                    isActive: t.isActive,
+                    promotedAt: t.promotedAt,
+                    joinedAt: t.createdAt,
+                };
+            });
+
+            if (filters.search) {
+                const searchLower = filters.search.toLowerCase();
+                trainerList = trainerList.filter(t => 
+                    t.name.toLowerCase().includes(searchLower) ||
+                    t.email.toLowerCase().includes(searchLower) ||
+                    t.specialization.some((s: string) => s.toLowerCase().includes(searchLower))
+                );
+            }
+
+            return trainerList;
         } catch (error) {
             throw error;
         }

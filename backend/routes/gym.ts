@@ -6,14 +6,16 @@ import {
     getGymsByOwner,
     updateGym,
     deleteGym,
-    updateGymVerificationStatus
+    updateGymVerificationStatus,
+    getGymMembers,
+    getGymTrainers
 } from '../controllers/gymController.js';
 
 import { requireAuth } from '../middleware/requireAuth.js';
 
 const router = express.Router();
 
-// All gym routesu
+// All gym routes
 router.route('/')
     .post(createGym)  // Auth removed for testing
     .get(getAllGyms);              // Anyone can view all gyms
@@ -32,6 +34,13 @@ router.route('/owner/:ownerId')
 // Route to update gym verification status (for admin)
 router.route('/:id/verification-status')
     .put(updateGymVerificationStatus); // Auth removed for testing
+
+// Routes for gym members and trainers
+router.route('/:gymId/members')
+    .get(requireAuth, getGymMembers); // Get all members of a gym
+
+router.route('/:gymId/trainers')
+    .get(requireAuth, getGymTrainers); // Get all trainers of a gym
 
 
 export default router;

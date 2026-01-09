@@ -15,6 +15,13 @@ import {
 } from "react-native";
 import { useAuth } from "@/context/AuthContext";
 
+const DEFAULT_API_BASE_URL = Platform.select({
+    android: 'http://10.0.2.2:3005/api',
+    ios: 'http://127.0.0.1:3005/api',
+    default: 'http://127.0.0.1:3005/api',
+});
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || DEFAULT_API_BASE_URL;
+
 export default function OwnerGymRegistrationScreen() {
     const [gymName, setGymName] = useState("");
     const [description, setDescription] = useState("");
@@ -36,7 +43,7 @@ export default function OwnerGymRegistrationScreen() {
 
         try {
             // Call the backend API to register the gym
-            const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3005/api'}/gyms`, {
+            const response = await fetch(`${API_BASE_URL}/gyms`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

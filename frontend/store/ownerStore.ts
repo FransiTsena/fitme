@@ -1,6 +1,12 @@
+import { Platform } from 'react-native';
 import { create } from 'zustand';
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3005/api';
+const DEFAULT_API_BASE_URL = Platform.select({
+    android: 'http://10.0.2.2:3005/api',
+    ios: 'http://127.0.0.1:3005/api',
+    default: 'http://127.0.0.1:3005/api',
+});
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || DEFAULT_API_BASE_URL;
 
 // Types
 interface Address {
@@ -66,6 +72,42 @@ interface MembershipDistribution {
     percentage: number;
 }
 
+interface GymMember {
+    _id: string;
+    id: string;
+    userId: string;
+    name: string;
+    email: string;
+    phone: string;
+    profileImage: string | null;
+    city: string;
+    plan: string;
+    planPrice: number;
+    status: 'active' | 'expired' | 'cancelled';
+    startDate: string;
+    endDate: string;
+    joinedAt: string;
+}
+
+interface GymTrainer {
+    _id: string;
+    id: string;
+    trainerId: string;
+    userId: string;
+    name: string;
+    email: string;
+    phone: string;
+    profileImage: string | null;
+    city: string;
+    specialization: string[];
+    bio: string;
+    rating: number;
+    reviewCount: number;
+    isActive: boolean;
+    promotedAt: string;
+    joinedAt: string;
+}
+
 interface Analytics {
     gymPerformance: {
         activeMembers: number;
@@ -92,13 +134,19 @@ interface Analytics {
 interface OwnerState {
     gym: Gym | null;
     analytics: Analytics | null;
+    members: GymMember[];
+    trainers: GymTrainer[];
     loading: boolean;
     analyticsLoading: boolean;
+    membersLoading: boolean;
+    trainersLoading: boolean;
     error: string | null;
 
     // Actions
     fetchGym: (ownerId: string, token: string) => Promise<void>;
     fetchAnalytics: (gymId: string, token: string) => Promise<void>;
+    fetchMembers: (gymId: string, token: string, filters?: { status?: string; search?: string }) => Promise<void>;
+    fetchTrainers: (gymId: string, token: string, filters?: { status?: string; search?: string }) => Promise<void>;
     updateGym: (gymId: string, data: Partial<Gym>, token: string) => Promise<{ success: boolean; error?: string }>;
     clearError: () => void;
 }
@@ -106,8 +154,12 @@ interface OwnerState {
 const useOwnerStore = create<OwnerState>((set, get) => ({
     gym: null,
     analytics: null,
+    members: [],
+    trainers: [],
     loading: false,
     analyticsLoading: false,
+    membersLoading: false,
+    trainersLoading: false,
     error: null,
 
     fetchGym: async (ownerId: string, token: string) => {
@@ -169,6 +221,74 @@ const useOwnerStore = create<OwnerState>((set, get) => ({
         } catch (error: any) {
             const errorMessage = error.message || 'Failed to fetch analytics';
             set({ error: errorMessage, analyticsLoading: false });
+        }
+    },
+
+    fetchMembers: async (gymId: string, token: string, filters?: { status?: string; search?: string }) => {
+        set({ membersLoading: true, error: null });
+
+        try {
+            const params = new URLSearchParams();
+            if (filters?.status) params.append('status', filters.status);
+            if (filters?.search) params.append('search', filters.search);
+            
+            const url = `${API_BASE_URL}/gyms/${gymId}/members${params.toString() ? `?${params.toString()}` : ''}`;
+
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || 'Failed to fetch members');
+            }
+
+            set({
+                members: data.data || [],
+                membersLoading: false,
+            });
+        } catch (error: any) {
+            const errorMessage = error.message || 'Failed to fetch members';
+            set({ error: errorMessage, membersLoading: false });
+        }
+    },
+
+    fetchTrainers: async (gymId: string, token: string, filters?: { status?: string; search?: string }) => {
+        set({ trainersLoading: true, error: null });
+
+        try {
+            const params = new URLSearchParams();
+            if (filters?.status) params.append('status', filters.status);
+            if (filters?.search) params.append('search', filters.search);
+            
+            const url = `${API_BASE_URL}/gyms/${gymId}/trainers${params.toString() ? `?${params.toString()}` : ''}`;
+
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || 'Failed to fetch trainers');
+            }
+
+            set({
+                trainers: data.data || [],
+                trainersLoading: false,
+            });
+        } catch (error: any) {
+            const errorMessage = error.message || 'Failed to fetch trainers';
+            set({ error: errorMessage, trainersLoading: false });
         }
     },
 
