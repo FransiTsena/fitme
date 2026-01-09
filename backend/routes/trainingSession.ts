@@ -18,6 +18,11 @@ router.put("/:id", requireAuth, updateSession);
 // Toggle status
 router.patch("/:id/status", toggleSessionStatus);
 
+// Get a single session by ID
+router.get("/:id", getSessionById);
+// Toggle status (requires auth)
+router.patch("/:id/status", requireAuth, toggleSessionStatus);
+
 // Get all sessions for a gym (Public)
 router.get("/gym/:gymId", getGymSessions);
 
