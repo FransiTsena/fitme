@@ -22,6 +22,8 @@ export default function RootLayout() {
           <Stack.Screen name="login" options={{ headerShown: false }} />
           <Stack.Screen name="signup" options={{ headerShown: false }} />
           <Stack.Screen name="forgot-password" options={{ headerShown: false }} />
+          <Stack.Screen name="owner-home" options={{ headerShown: false }} />
+          <Stack.Screen name="user-home" options={{ headerShown: false }} />
           <Stack.Screen name="owner-menu" options={{ presentation: 'transparentModal', animation: 'fade', headerShown: false }} />
         </Stack>
         <StatusBar style="auto" />

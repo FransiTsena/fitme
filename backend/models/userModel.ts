@@ -7,22 +7,26 @@ const userSchema = new mongoose.Schema({
     image: { type: String }, // Provided by Better Auth default
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },
-    
+
     // Custom Fields
     fatherName: { type: String },
     phone: { type: String },
-    role: { type: String, default: "member" }, // member | owner | trainer
+    role: {
+        type: String,
+        enum: ["owner", "trainer", "member",],
+        default: "member"
+    },
     status: { type: String, default: "active" }, // active | pending | suspended
     city: { type: String },
     area: { type: String },
     profileImage: { type: String }, // Dedicated field for profile picture
-    
+
     // Owner Document Verification Fields
     ownerDocuments: [{ type: String }], // Array of document URLs
-    documentStatus: { 
-        type: String, 
+    documentStatus: {
+        type: String,
         enum: ["not_submitted", "pending", "approved", "rejected"],
-        default: "not_submitted" 
+        default: "not_submitted"
     },
     documentSubmittedAt: { type: Date },
     documentReviewedAt: { type: Date },

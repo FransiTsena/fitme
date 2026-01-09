@@ -16,11 +16,11 @@ import {
 import { useAuth } from "@/context/AuthContext";
 
 export default function LoginScreen() {
-    const { user: contextUser } = useAuth();
+    const authContext = useAuth();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [passwordVisible, setPasswordVisible] = useState(false);
-    const { login, loading, error, clearError, fetchUser } = useAuth();
+    const { login, loading, error, clearError, fetchUser } = authContext;
 
     const handleLogin = async () => {
         if (!email || !password) {
@@ -31,54 +31,64 @@ export default function LoginScreen() {
         try {
             const result = await login(email, password);
             if (result.success) {
-                // Use Promise.resolve().then() to ensure navigation happens after state update
-                Promise.resolve().then(async () => {
-                    // Small delay to ensure user data is loaded in context
-                    setTimeout(async () => {
-                        // Fetch fresh user data after login to ensure it's updated
-                        await fetchUser();
+                // Wait for fetchUser to complete, then navigate based on user role
+                await fetchUser();
 
-                        // Small additional delay to ensure fetchUser completes
-                        setTimeout(() => {
-                            // Access the user data from the auth context
-                            const userRole = contextUser?.role;
-                            const documentStatus = contextUser?.documentStatus;
-
-                            console.log('DEBUG: User role after login:', userRole);
-                            console.log('DEBUG: Document status after login:', documentStatus);
-
-                            if (userRole === 'owner') {
-                                // For owners, check if documents are pending approval
-                                if (documentStatus === 'pending' || documentStatus === 'not_submitted') {
-                                    // Owner needs to submit documents or is pending approval
-                                    // Navigate to owner home which should guide them to submit documents
-                                    console.log('Navigating owner to owner-home (pending)');
-                                    router.replace('/owner-home');
-                                } else if (documentStatus === 'approved') {
-                                    // Approved owner - can access full owner features
-                                    console.log('Navigating owner to owner-home (approved)');
-                                    router.replace('/owner-home');
-                                } else if (documentStatus === 'rejected') {
-                                    // Rejected owner - may need to resubmit documents
-                                    console.log('Navigating owner to owner-home (rejected)');
-                                    router.replace('/owner-home');
-                                } else {
-                                    // Default case for owner
-                                    console.log('Navigating owner to owner-home (default)');
-                                    router.replace('/owner-home');
-                                }
-                            } else if (userRole === 'trainer') {
-                                // Trainers go to their respective home screen
-                                console.log('Navigating trainer to user-home');
-                                router.replace('/user-home');
+                // Wait for the context to update by polling for user data
+                const waitForUserData = (timeout = 3000) => {
+                    return new Promise<void>((resolve) => {
+                        const startTime = Date.now();
+                        const checkUser = () => {
+                            if (authContext.user?.role) {
+                                resolve();
+                            } else if (Date.now() - startTime < timeout) {
+                                setTimeout(checkUser, 100);
                             } else {
-                                // Members and other roles go to regular user home
-                                console.log('Navigating member to user-home');
-                                router.replace('/user-home');
+                                resolve(); // Resolve anyway after timeout
                             }
-                        }, 300);
-                    }, 300); // Small delay to ensure user data is available
-                });
+                        };
+                        checkUser();
+                    });
+                };
+
+                await waitForUserData();
+
+                // Access the user data from the auth context after it's updated
+                const userRole = authContext.user?.role;
+                const documentStatus = authContext.user?.documentStatus;
+
+                console.log('DEBUG: User role after login:', userRole);
+                console.log('DEBUG: Document status after login:', documentStatus);
+
+                if (userRole === 'owner') {
+                    // For owners, check if documents are pending approval
+                    if (documentStatus === 'pending' || documentStatus === 'not_submitted') {
+                        // Owner needs to submit documents or is pending approval
+                        // Navigate to owner home which should guide them to submit documents
+                        console.log('Navigating owner to owner-home (pending)');
+                        router.replace('/owner-home');
+                    } else if (documentStatus === 'approved') {
+                        // Approved owner - can access full owner features
+                        console.log('Navigating owner to owner-home (approved)');
+                        router.replace('/owner-home');
+                    } else if (documentStatus === 'rejected') {
+                        // Rejected owner - may need to resubmit documents
+                        console.log('Navigating owner to owner-home (rejected)');
+                        router.replace('/owner-home');
+                    } else {
+                        // Default case for owner
+                        console.log('Navigating owner to owner-home (default)');
+                        router.replace('/owner-home');
+                    }
+                } else if (userRole === 'trainer') {
+                    // Trainers go to their respective home screen
+                    console.log('Navigating trainer to user-home');
+                    router.replace('/user-home');
+                } else {
+                    // Members and other roles go to regular user home
+                    console.log('Navigating member to user-home');
+                    router.replace('/user-home');
+                }
             } else {
                 Alert.alert("Login Failed", result.error);
             }

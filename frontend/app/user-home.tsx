@@ -262,7 +262,7 @@ export default function UserHomeScreen() {
                     <View style={styles.welcomeHeader}>
                         <View>
                             <Text style={styles.dateText}>Jan 20, 2026</Text>
-                            <Text style={styles.welcomeTitle}>Welcome back,</Text>
+                            <Text style={styles.welcomeTitle}>Welcome, Member!</Text>
                         </View>
                         <TouchableOpacity style={styles.editBtn}>
                             <Ionicons name="pencil" size={12} color="#ff8c2b" />

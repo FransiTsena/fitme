@@ -13,6 +13,16 @@ interface User {
     status?: string;
     createdAt?: string;
     updatedAt?: string;
+    documentStatus?: "not_submitted" | "pending" | "approved" | "rejected";
+    ownerDocuments?: string[];
+    documentSubmittedAt?: string;
+    documentReviewedAt?: string;
+    documentReviewedBy?: string;
+    documentReviewNotes?: string;
+    fatherName?: string;
+    profileImage?: string;
+    emailVerified?: boolean;
+    image?: string;
 }
 
 interface AuthState {
