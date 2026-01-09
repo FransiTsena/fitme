@@ -36,7 +36,7 @@ interface GymData {
 const sampleUsers = [
     {
         name: 'John Smith',
-        email: 'johnsmith@example.com',
+        email: 'owner@gmail.com',
         phone: '+251911234567',
         registrationRole: 'owner',
         city: 'Addis Ababa',
@@ -44,7 +44,7 @@ const sampleUsers = [
     },
     {
         name: 'Sarah Johnson',
-        email: 'sarahj@example.com',
+        email: 'owner2@example.com',
         phone: '+251911234568',
         registrationRole: 'owner',
         city: 'Addis Ababa',
@@ -52,7 +52,7 @@ const sampleUsers = [
     },
     {
         name: 'Michael Chen',
-        email: 'michaelc@example.com',
+        email: 'owner3@example.com',
         phone: '+251911234569',
         registrationRole: 'owner',
         city: 'Addis Ababa',
@@ -60,7 +60,7 @@ const sampleUsers = [
     },
     {
         name: 'Emily Rodriguez',
-        email: 'emilyr@example.com',
+        email: 'owner4@example.com',
         phone: '+251911234570',
         registrationRole: 'owner',
         city: 'Addis Ababa',
@@ -68,7 +68,7 @@ const sampleUsers = [
     },
     {
         name: 'David Wilson',
-        email: 'davidw@example.com',
+        email: 'owner5@example.com',
         phone: '+251911234571',
         registrationRole: 'owner',
         city: 'Addis Ababa',

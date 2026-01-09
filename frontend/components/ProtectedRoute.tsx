@@ -6,13 +6,17 @@ import { View, Text } from 'react-native';
 interface ProtectedRouteProps {
     children: ReactNode;
     fallback?: ReactNode;
+    requiredRole?: 'owner' | 'trainer' | 'member';
+    allowAnyRole?: boolean;
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     children,
-    fallback = null
+    fallback = null,
+    requiredRole,
+    allowAnyRole = false
 }) => {
-    const { isAuthenticated, loading } = useAuth();
+    const { user, isAuthenticated, loading } = useAuth();
     const router = useRouter();
 
     useEffect(() => {
@@ -37,7 +41,15 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
         return fallback || null;
     }
 
+    // Role-based access control
+    if (requiredRole && !allowAnyRole) {
+        const userRole = user?.role;
+        if (userRole !== requiredRole) {
+            return fallback || null;
+        }
+    }
+
     return <>{children}</>;
-};
+}
 
 export default ProtectedRoute;

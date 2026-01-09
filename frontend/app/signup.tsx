@@ -55,21 +55,45 @@ export default function SignupScreen() {
             });
 
             if (result.success) {
-                Alert.alert(
-                    "Success",
-                    "Account created successfully! Please check your email to verify your account.",
-                    [
-                        {
-                            text: "OK",
-                            onPress: () => {
-                                // Use Promise.resolve().then() to ensure navigation happens after state update
-                                Promise.resolve().then(() => {
-                                    router.replace("/login");
-                                });
+                // Navigate based on user role after successful signup
+                const userRole = role.toLowerCase();
+
+                if (userRole === 'owner') {
+                    // For owners, show different success message and navigate to gym registration
+                    Alert.alert(
+                        "Account Created Successfully",
+                        "Your account has been created successfully! As a gym owner, you need to verify your gym details to complete the registration process. You will be placed in a pending approval state until verification is complete.",
+                        [
+                            {
+                                text: "OK",
+                                onPress: () => {
+                                    // Use Promise.resolve().then() to ensure navigation happens after state update
+                                    Promise.resolve().then(() => {
+                                        // For owners, navigate to gym registration page after login
+                                        router.replace("/login");
+                                    });
+                                }
                             }
-                        }
-                    ]
-                );
+                        ]
+                    );
+                } else {
+                    // For trainers and members, show success message and navigate to home
+                    Alert.alert(
+                        "Success",
+                        "Account created successfully! You can now access the application.",
+                        [
+                            {
+                                text: "OK",
+                                onPress: () => {
+                                    // Use Promise.resolve().then() to ensure navigation happens after state update
+                                    Promise.resolve().then(() => {
+                                        router.replace("/login");
+                                    });
+                                }
+                            }
+                        ]
+                    );
+                }
             } else {
                 Alert.alert("Signup Failed", result.error);
             }

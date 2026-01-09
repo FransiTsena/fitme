@@ -16,10 +16,11 @@ import {
 import { useAuth } from "@/context/AuthContext";
 
 export default function LoginScreen() {
+    const { user: contextUser } = useAuth();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [passwordVisible, setPasswordVisible] = useState(false);
-    const { login, loading, error, clearError } = useAuth();
+    const { login, loading, error, clearError, fetchUser } = useAuth();
 
     const handleLogin = async () => {
         if (!email || !password) {
@@ -31,11 +32,52 @@ export default function LoginScreen() {
             const result = await login(email, password);
             if (result.success) {
                 // Use Promise.resolve().then() to ensure navigation happens after state update
-                Promise.resolve().then(() => {
-                    // Navigate based on user role
-                    // For now, we'll navigate to the home page
-                    // Navigate to the explore page in tabs which will be protected
-                    router.replace("/explore");
+                Promise.resolve().then(async () => {
+                    // Small delay to ensure user data is loaded in context
+                    setTimeout(async () => {
+                        // Fetch fresh user data after login to ensure it's updated
+                        await fetchUser();
+
+                        // Small additional delay to ensure fetchUser completes
+                        setTimeout(() => {
+                            // Access the user data from the auth context
+                            const userRole = contextUser?.role;
+                            const documentStatus = contextUser?.documentStatus;
+
+                            console.log('DEBUG: User role after login:', userRole);
+                            console.log('DEBUG: Document status after login:', documentStatus);
+
+                            if (userRole === 'owner') {
+                                // For owners, check if documents are pending approval
+                                if (documentStatus === 'pending' || documentStatus === 'not_submitted') {
+                                    // Owner needs to submit documents or is pending approval
+                                    // Navigate to owner home which should guide them to submit documents
+                                    console.log('Navigating owner to owner-home (pending)');
+                                    router.replace('/owner-home');
+                                } else if (documentStatus === 'approved') {
+                                    // Approved owner - can access full owner features
+                                    console.log('Navigating owner to owner-home (approved)');
+                                    router.replace('/owner-home');
+                                } else if (documentStatus === 'rejected') {
+                                    // Rejected owner - may need to resubmit documents
+                                    console.log('Navigating owner to owner-home (rejected)');
+                                    router.replace('/owner-home');
+                                } else {
+                                    // Default case for owner
+                                    console.log('Navigating owner to owner-home (default)');
+                                    router.replace('/owner-home');
+                                }
+                            } else if (userRole === 'trainer') {
+                                // Trainers go to their respective home screen
+                                console.log('Navigating trainer to user-home');
+                                router.replace('/user-home');
+                            } else {
+                                // Members and other roles go to regular user home
+                                console.log('Navigating member to user-home');
+                                router.replace('/user-home');
+                            }
+                        }, 300);
+                    }, 300); // Small delay to ensure user data is available
                 });
             } else {
                 Alert.alert("Login Failed", result.error);

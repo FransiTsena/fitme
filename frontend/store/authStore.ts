@@ -40,7 +40,7 @@ interface AuthState {
 }
 
 // API base URL - configurable for different environments
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3005/api';
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://127.0.0.1:3005/api';
 
 const useAuthStore = create<AuthState>()(
     persist(
@@ -55,6 +55,7 @@ const useAuthStore = create<AuthState>()(
                 set({ loading: true, error: null });
 
                 try {
+                    console.log(`${API_BASE_URL}/users/login`);
                     const response = await fetch(`${API_BASE_URL}/users/login`, {
                         method: 'POST',
                         headers: {

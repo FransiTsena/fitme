@@ -51,6 +51,11 @@ app.use(
     credentials: true,
   })
 );
+// Log requests
+app.use("/", async (req, res, next) => {
+  console.log("Request recieved");
+  next();
+})
 
 // 🔥 IMPORTANT: Better Auth routes for JWT authentication
 // MUST be before express.json()

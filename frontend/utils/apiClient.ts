@@ -5,7 +5,7 @@ class ApiClient {
   private baseUrl: string;
 
   constructor() {
-    this.baseUrl = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3005/api';
+    this.baseUrl = API_BASE_URL || 'http://127.0.0.1:3005/api';
   }
 
   // Generic request method
@@ -15,7 +15,7 @@ class ApiClient {
     includeAuth = false
   ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
-    
+
     const config: RequestInit = {
       headers: {
         'Content-Type': 'application/json',

@@ -225,9 +225,14 @@ function CustomCalendar() {
 }
 
 // --- Main Screen ---
+import { useAuth } from "@/context/AuthContext";
+
 export default function UserHomeScreen() {
+    const { user } = useAuth();
+    const userRole = user?.role;
+
     return (
-        <View style={styles.container}>
+        <View style={styles.container} testID="user-dashboard">
             <Stack.Screen
                 options={{
                     headerTitle: () => <Logo size={24} />,
