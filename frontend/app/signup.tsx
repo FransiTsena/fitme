@@ -51,7 +51,7 @@ export default function SignupScreen() {
                 password,
                 name,
                 phone,
-                registrationRole: role,
+                registrationRole: role.toLowerCase(),
             });
 
             if (result.success) {

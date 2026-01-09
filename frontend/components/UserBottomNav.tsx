@@ -21,17 +21,17 @@ export function UserBottomNav() {
             </TouchableOpacity>
 
             {/* Workouts / Dumbbell */}
-            <TouchableOpacity onPress={() => router.push("/user-workout")}>
+            <TouchableOpacity onPress={() => router.push("/member/user-workout")}>
                 <Ionicons
-                    name={isActive("/user-workout") || isActive("/workout-customization") || isActive("/workout-ai-welcome") || isActive("/workout-manual-plan") ? "barbell" : "barbell-outline"}
+                    name={isActive("/member/user-workout") || isActive("/workout-customization") || isActive("/workout-ai-welcome") || isActive("/workout-manual-plan") ? "barbell" : "barbell-outline"}
                     size={28}
-                    color={isActive("/user-workout") || isActive("/workout-customization") || isActive("/workout-ai-welcome") || isActive("/workout-manual-plan") ? "#ff8c2b" : "#666"}
+                    color={isActive("/member/user-workout") || isActive("/workout-customization") || isActive("/workout-ai-welcome") || isActive("/workout-manual-plan") ? "#ff8c2b" : "#666"}
                 />
             </TouchableOpacity>
 
             {/* Home */}
-            <TouchableOpacity onPress={() => router.push("/user-home")} >
-                <Ionicons name="home-outline" size={28} color={isActive("/user-home") ? "#ff8c2b" : "#666"} />
+            <TouchableOpacity onPress={() => router.push("/member/home")} >
+                <Ionicons name="home-outline" size={28} color={isActive("/member/home") ? "#ff8c2b" : "#666"} />
             </TouchableOpacity>
 
             {/* Schedule / Calendar */}
@@ -40,11 +40,11 @@ export function UserBottomNav() {
             </TouchableOpacity>
 
             {/* Profile */}
-            <TouchableOpacity onPress={() => router.push("/user-profile")}>
+            <TouchableOpacity onPress={() => router.push("/member/profile")}>
                 <Ionicons
-                    name={isActive("/user-profile") ? "person" : "person-outline"}
+                    name={isActive("/member/profile") ? "person" : "person-outline"}
                     size={28}
-                    color={isActive("/user-profile") ? "#ff8c2b" : "#666"}
+                    color={isActive("/member/profile") ? "#ff8c2b" : "#666"}
                 />
             </TouchableOpacity>
         </View>

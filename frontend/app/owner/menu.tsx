@@ -31,6 +31,28 @@ export default function OwnerMenuModal() {
 
                 <View style={styles.divider} />
 
+                <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/owner/profile')}>
+                    <Ionicons name="person-outline" size={24} color="#fff" />
+                    <Text style={styles.menuItemText}>My Profile</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/owner/members-list-owner')}>
+                    <Ionicons name="people-outline" size={24} color="#fff" />
+                    <Text style={styles.menuItemText}>Members</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/owner/trainers-list-owner')}>
+                    <Ionicons name="barbell-outline" size={24} color="#fff" />
+                    <Text style={styles.menuItemText}>Trainers</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/owner/owner-gym-registration')}>
+                    <Ionicons name="business-outline" size={24} color="#fff" />
+                    <Text style={styles.menuItemText}>Gym Registration</Text>
+                </TouchableOpacity>
+
+                <View style={styles.divider} />
+
                 <TouchableOpacity
                     style={styles.menuItem}
                     onPress={() => {
@@ -97,5 +119,10 @@ const styles = StyleSheet.create({
         color: '#ff4444', // Red for logout
         fontSize: 18,
         fontWeight: '600',
+    },
+    menuItemText: {
+        color: '#fff',
+        fontSize: 16,
+        marginLeft: 12,
     }
 });

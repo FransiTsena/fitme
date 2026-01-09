@@ -243,7 +243,7 @@ export default function UserHomeScreen() {
                                 <Ionicons name="notifications-outline" size={24} color="#fff" />
                                 <View style={styles.badge} />
                             </TouchableOpacity>
-                            <TouchableOpacity onPress={() => router.push("/owner-menu")}>
+                            <TouchableOpacity onPress={() => router.push("/member/menu")}>
                                 <Ionicons name="menu-outline" size={24} color="#fff" />
                             </TouchableOpacity>
                         </View>
@@ -354,7 +354,7 @@ export default function UserHomeScreen() {
                     </TouchableOpacity>
                 </View>
 
-                <TouchableOpacity style={styles.workoutCard} onPress={() => router.push("/day-plan-customization")}>
+                <TouchableOpacity style={styles.workoutCard} onPress={() => router.push("/member/day-plan-customization")}>
                     <ImageBackground
                         source={require('@/assets/images/gym-1.png')}
                         style={styles.workoutBg}
