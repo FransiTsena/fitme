@@ -103,7 +103,7 @@ function CustomCalendar() {
             if (dayCounter > daysInMonth) break;
         }
         return grid;
-    }, [year, month, firstDayOfMonth, daysInMonth]);
+    }, [firstDayOfMonth, daysInMonth]);
 
     const getDayStyle = (day: number | null) => {
         if (!day) return {};
@@ -278,7 +278,7 @@ export default function UserHomeScreen() {
                         </View>
                         <View>
                             <Text style={styles.userName}>Abebe Bekele</Text>
-                            <Text style={styles.userQuote}>Don't forget to{"\n"}hit your goals</Text>
+                            <Text style={styles.userQuote}>Don&apos;t forget to{"\n"}hit your goals</Text>
                         </View>
                     </View>
                 </View>
@@ -348,7 +348,7 @@ export default function UserHomeScreen() {
 
                 {/* Today's Workout */}
                 <View style={styles.sectionHeader}>
-                    <Text style={styles.sectionTitle}>Today's Workout</Text>
+                    <Text style={styles.sectionTitle}>Today&apos;s Workout</Text>
                     <TouchableOpacity>
                         <Text style={styles.seeAllText}>See All</Text>
                     </TouchableOpacity>
@@ -375,7 +375,7 @@ export default function UserHomeScreen() {
 
                 {/* Today's Sessions */}
                 <View style={styles.sectionHeader}>
-                    <Text style={styles.sectionTitle}>Today's Sessions</Text>
+                    <Text style={styles.sectionTitle}>Today&apos;s Sessions</Text>
                     <TouchableOpacity>
                         <Text style={styles.seeAllText}>View All</Text>
                     </TouchableOpacity>

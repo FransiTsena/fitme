@@ -1,3 +1,4 @@
+import { Platform } from 'react-native';
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -43,6 +44,10 @@ interface AuthState {
         registrationRole: string;
         city?: string;
         area?: string;
+        // Trainer-specific fields
+        specialization?: string[];
+        bio?: string;
+        gymId?: string;
     }) => Promise<{ success: boolean; error?: string }>;
     logout: () => void;
     fetchUser: () => Promise<void>;
@@ -50,7 +55,13 @@ interface AuthState {
 }
 
 // API base URL - configurable for different environments
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://127.0.0.1:3005/api';
+const DEFAULT_API_BASE_URL = Platform.select({
+    android: 'http://10.0.2.2:3005/api', // Android emulator loopback
+    ios: 'http://127.0.0.1:3005/api',
+    default: 'http://127.0.0.1:3005/api',
+});
+
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || DEFAULT_API_BASE_URL;
 
 const useAuthStore = create<AuthState>()(
     persist(
@@ -196,6 +207,12 @@ const useAuthStore = create<AuthState>()(
         {
             name: 'auth-storage', // name of the item in the storage (must be unique)
             storage: createJSONStorage(() => AsyncStorage), // Use AsyncStorage for mobile compatibility
+            partialize: (state) => ({
+                // Only persist these fields - NOT loading or error
+                user: state.user,
+                token: state.token,
+                isAuthenticated: state.isAuthenticated,
+            }),
         }
     )
 );

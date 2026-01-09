@@ -1,7 +1,7 @@
 import { Logo } from "@/components/Logo";
 import { Ionicons } from "@expo/vector-icons";
 import { Stack, router } from "expo-router";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
     StyleSheet,
     Text,
@@ -11,24 +11,104 @@ import {
     Alert,
     ScrollView,
     KeyboardAvoidingView,
-    Platform
+    Platform,
+    ActivityIndicator,
 } from "react-native";
 import { useAuth } from "@/context/AuthContext";
+import useTrainerStore from "@/store/trainerStore";
+
+const SPECIALIZATIONS = [
+    "Weight Training",
+    "Cardio",
+    "HIIT",
+    "Yoga",
+    "Pilates",
+    "CrossFit",
+    "Boxing",
+    "Martial Arts",
+    "Nutrition",
+    "Personal Training",
+];
 
 export default function TrainerProfileScreen() {
     const { user, token } = useAuth();
+    const { profile, loading, fetchTrainerProfile, updateProfile } = useTrainerStore();
     const [isEditing, setIsEditing] = useState(false);
+    const [saving, setSaving] = useState(false);
     const [formData, setFormData] = useState({
-        name: user?.name || '',
-        email: user?.email || '',
-        phone: user?.phone || '',
-        fatherName: user?.fatherName || '',
-        city: user?.city || '',
-        area: user?.area || '',
+        specialization: [] as string[],
+        bio: '',
     });
 
+    useEffect(() => {
+        if (user?.id && token && !profile) {
+            fetchTrainerProfile(user.id, token);
+        }
+    }, [user?.id, token, profile, fetchTrainerProfile]);
+
+    useEffect(() => {
+        if (profile) {
+            setFormData({
+                specialization: profile.specialization || [],
+                bio: profile.bio || '',
+            });
+        }
+    }, [profile]);
+
+    const toggleSpecialization = (spec: string) => {
+        if (formData.specialization.includes(spec)) {
+            setFormData({
+                ...formData,
+                specialization: formData.specialization.filter(s => s !== spec)
+            });
+        } else {
+            if (formData.specialization.length >= 5) {
+                Alert.alert("Limit Reached", "You can select up to 5 specializations");
+                return;
+            }
+            setFormData({
+                ...formData,
+                specialization: [...formData.specialization, spec]
+            });
+        }
+    };
+
     const handleSave = async () => {
-        Alert.alert('Feature Coming Soon', 'Profile updates will be available in the next release.');
+        if (!token) return;
+
+        if (formData.specialization.length === 0) {
+            Alert.alert('Error', 'Please select at least one specialization');
+            return;
+        }
+
+        if (!formData.bio.trim() || formData.bio.trim().length < 20) {
+            Alert.alert('Error', 'Please write a bio (at least 20 characters)');
+            return;
+        }
+
+        setSaving(true);
+        const result = await updateProfile({
+            specialization: formData.specialization,
+            bio: formData.bio.trim(),
+        }, token);
+        setSaving(false);
+
+        if (result.success) {
+            Alert.alert('Success', 'Profile updated successfully!');
+            setIsEditing(false);
+        } else {
+            Alert.alert('Error', result.error || 'Failed to update profile');
+        }
+    };
+
+    const handleCancel = () => {
+        // Reset form to current profile data
+        if (profile) {
+            setFormData({
+                specialization: profile.specialization || [],
+                bio: profile.bio || '',
+            });
+        }
         setIsEditing(false);
     };
 
@@ -59,6 +139,7 @@ export default function TrainerProfileScreen() {
             />
 
             <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.contentContainer}>
+                {/* Profile Header */}
                 <View style={styles.profileCard}>
                     <View style={styles.avatarContainer}>
                         <Ionicons name="person-circle-outline" size={100} color="#ff8c2b" />
@@ -70,109 +151,170 @@ export default function TrainerProfileScreen() {
                     <Text style={styles.profileName}>{user?.name || 'Trainer Name'}</Text>
                     <Text style={styles.trainerBadge}>Fitness Trainer</Text>
 
-                    <View style={styles.infoSection}>
-                        <Text style={styles.sectionTitle}>Personal Information</Text>
+                    {/* Gym Info */}
+                    {profile?.gymId && (
+                        <View style={styles.gymInfo}>
+                            <Ionicons name="location" size={16} color="#888" />
+                            <Text style={styles.gymName}>
+                                {typeof profile.gymId === 'object' ? profile.gymId.name : 'Your Gym'}
+                            </Text>
+                        </View>
+                    )}
 
-                        {isEditing ? (
-                            <>
-                                <View style={styles.inputGroup}>
-                                    <Text style={styles.label}>Full Name</Text>
-                                    <TextInput
-                                        style={styles.input}
-                                        value={formData.name}
-                                        onChangeText={(text) => setFormData({ ...formData, name: text })}
-                                    />
-                                </View>
+                    {/* Rating */}
+                    {profile?.rating && (
+                        <View style={styles.ratingContainer}>
+                            <Ionicons name="star" size={18} color="#ffd700" />
+                            <Text style={styles.ratingText}>
+                                {profile.rating.average?.toFixed(1) || '0.0'} ({profile.rating.count || 0} reviews)
+                            </Text>
+                        </View>
+                    )}
+                </View>
 
-                                <View style={styles.inputGroup}>
-                                    <Text style={styles.label}>Email</Text>
-                                    <TextInput
-                                        style={styles.input}
-                                        value={formData.email}
-                                        onChangeText={(text) => setFormData({ ...formData, email: text })}
-                                        keyboardType="email-address"
-                                    />
-                                </View>
+                {/* User Info Section */}
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>Personal Information</Text>
+                    
+                    <View style={styles.infoRow}>
+                        <Ionicons name="mail-outline" size={20} color="#888" />
+                        <View style={styles.infoContent}>
+                            <Text style={styles.infoLabel}>Email</Text>
+                            <Text style={styles.infoValue}>{user?.email || 'N/A'}</Text>
+                        </View>
+                    </View>
 
-                                <View style={styles.inputGroup}>
-                                    <Text style={styles.label}>Phone</Text>
-                                    <TextInput
-                                        style={styles.input}
-                                        value={formData.phone}
-                                        onChangeText={(text) => setFormData({ ...formData, phone: text })}
-                                        keyboardType="phone-pad"
-                                    />
-                                </View>
+                    <View style={styles.infoRow}>
+                        <Ionicons name="call-outline" size={20} color="#888" />
+                        <View style={styles.infoContent}>
+                            <Text style={styles.infoLabel}>Phone</Text>
+                            <Text style={styles.infoValue}>{user?.phone || 'N/A'}</Text>
+                        </View>
+                    </View>
+                </View>
 
-                                <View style={styles.inputGroup}>
-                                    <Text style={styles.label}>Father's Name</Text>
-                                    <TextInput
-                                        style={styles.input}
-                                        value={formData.fatherName}
-                                        onChangeText={(text) => setFormData({ ...formData, fatherName: text })}
-                                    />
-                                </View>
-
-                                <View style={styles.inputGroup}>
-                                    <Text style={styles.label}>City</Text>
-                                    <TextInput
-                                        style={styles.input}
-                                        value={formData.city}
-                                        onChangeText={(text) => setFormData({ ...formData, city: text })}
-                                    />
-                                </View>
-
-                                <View style={styles.inputGroup}>
-                                    <Text style={styles.label}>Area</Text>
-                                    <TextInput
-                                        style={styles.input}
-                                        value={formData.area}
-                                        onChangeText={(text) => setFormData({ ...formData, area: text })}
-                                    />
-                                </View>
-                            </>
-                        ) : (
-                            <>
-                                <View style={styles.infoRow}>
-                                    <Text style={styles.infoLabel}>Email</Text>
-                                    <Text style={styles.infoValue}>{user?.email || 'N/A'}</Text>
-                                </View>
-
-                                <View style={styles.infoRow}>
-                                    <Text style={styles.infoLabel}>Phone</Text>
-                                    <Text style={styles.infoValue}>{user?.phone || 'N/A'}</Text>
-                                </View>
-
-                                <View style={styles.infoRow}>
-                                    <Text style={styles.infoLabel}>Father's Name</Text>
-                                    <Text style={styles.infoValue}>{user?.fatherName || 'N/A'}</Text>
-                                </View>
-
-                                <View style={styles.infoRow}>
-                                    <Text style={styles.infoLabel}>Location</Text>
-                                    <Text style={styles.infoValue}>{user?.city ? `${user?.area}, ${user?.city}` : 'N/A'}</Text>
-                                </View>
-                            </>
+                {/* Trainer Profile Section */}
+                <View style={styles.section}>
+                    <View style={styles.sectionHeader}>
+                        <Text style={styles.sectionTitle}>Trainer Profile</Text>
+                        {!isEditing && (
+                            <TouchableOpacity onPress={() => setIsEditing(true)}>
+                                <Ionicons name="pencil" size={20} color="#ff8c2b" />
+                            </TouchableOpacity>
                         )}
                     </View>
+
+                    {loading ? (
+                        <ActivityIndicator size="small" color="#ff8c2b" style={{ marginTop: 20 }} />
+                    ) : isEditing ? (
+                        <>
+                            {/* Specializations Edit */}
+                            <Text style={styles.label}>Specializations</Text>
+                            <Text style={styles.helperText}>Select up to 5 areas you specialize in</Text>
+                            <View style={styles.specsGrid}>
+                                {SPECIALIZATIONS.map((spec) => (
+                                    <TouchableOpacity
+                                        key={spec}
+                                        style={[
+                                            styles.specChip,
+                                            formData.specialization.includes(spec) && styles.specChipSelected
+                                        ]}
+                                        onPress={() => toggleSpecialization(spec)}
+                                    >
+                                        <Text style={[
+                                            styles.specChipText,
+                                            formData.specialization.includes(spec) && styles.specChipTextSelected
+                                        ]}>
+                                            {spec}
+                                        </Text>
+                                    </TouchableOpacity>
+                                ))}
+                            </View>
+                            <Text style={styles.selectedCount}>{formData.specialization.length}/5 selected</Text>
+
+                            {/* Bio Edit */}
+                            <Text style={styles.label}>About You</Text>
+                            <Text style={styles.helperText}>Tell clients about your experience (min 20 chars)</Text>
+                            <TextInput
+                                style={styles.bioInput}
+                                multiline
+                                numberOfLines={4}
+                                placeholder="I am a certified personal trainer with experience in..."
+                                placeholderTextColor="#666"
+                                value={formData.bio}
+                                onChangeText={(text) => setFormData({ ...formData, bio: text })}
+                                textAlignVertical="top"
+                            />
+                            <Text style={styles.charCount}>{formData.bio.length} characters</Text>
+                        </>
+                    ) : (
+                        <>
+                            {/* Specializations Display */}
+                            <Text style={styles.label}>Specializations</Text>
+                            <View style={styles.specsDisplay}>
+                                {profile?.specialization?.length ? (
+                                    profile.specialization.map((spec) => (
+                                        <View key={spec} style={styles.specBadge}>
+                                            <Text style={styles.specBadgeText}>{spec}</Text>
+                                        </View>
+                                    ))
+                                ) : (
+                                    <Text style={styles.emptyText}>No specializations set</Text>
+                                )}
+                            </View>
+
+                            {/* Bio Display */}
+                            <Text style={[styles.label, { marginTop: 20 }]}>About</Text>
+                            <Text style={styles.bioText}>
+                                {profile?.bio || 'No bio added yet'}
+                            </Text>
+                        </>
+                    )}
                 </View>
             </ScrollView>
 
-            <View style={styles.buttonContainer}>
-                {isEditing ? (
-                    <>
-                        <TouchableOpacity style={styles.cancelButton} onPress={() => setIsEditing(false)}>
-                            <Text style={styles.cancelButtonText}>Cancel</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-                            <Text style={styles.saveButtonText}>Save Changes</Text>
-                        </TouchableOpacity>
-                    </>
-                ) : (
-                    <TouchableOpacity style={styles.editButton} onPress={() => setIsEditing(true)}>
-                        <Text style={styles.editButtonText}>Edit Profile</Text>
+            {/* Bottom Buttons */}
+            {isEditing && (
+                <View style={styles.buttonContainer}>
+                    <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
+                        <Text style={styles.cancelButtonText}>Cancel</Text>
                     </TouchableOpacity>
-                )}
+                    <TouchableOpacity 
+                        style={[styles.saveButton, saving && styles.buttonDisabled]} 
+                        onPress={handleSave}
+                        disabled={saving}
+                    >
+                        {saving ? (
+                            <ActivityIndicator size="small" color="#fff" />
+                        ) : (
+                            <Text style={styles.saveButtonText}>Save Changes</Text>
+                        )}
+                    </TouchableOpacity>
+                </View>
+            )}
+
+            {/* Bottom Nav */}
+            <View style={styles.bottomNav}>
+                <TouchableOpacity style={styles.navItem} onPress={() => router.push("/trainer/home")}>
+                    <Ionicons name="home-outline" size={24} color="#666" />
+                    <Text style={styles.navText}>Home</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.navItem} onPress={() => router.push("/trainer/clients" as any)}>
+                    <Ionicons name="people-outline" size={24} color="#666" />
+                    <Text style={styles.navText}>Clients</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.navItem} onPress={() => router.push("/trainer/sessions" as any)}>
+                    <Ionicons name="fitness-outline" size={24} color="#666" />
+                    <Text style={styles.navText}>Sessions</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.navItem} onPress={() => router.push("/trainer/schedule" as any)}>
+                    <Ionicons name="calendar-outline" size={24} color="#666" />
+                    <Text style={styles.navText}>Schedule</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.navItem}>
+                    <Ionicons name="person" size={24} color="#ff8c2b" />
+                    <Text style={[styles.navText, styles.navTextActive]}>Profile</Text>
+                </TouchableOpacity>
             </View>
         </KeyboardAvoidingView>
     );
@@ -185,7 +327,7 @@ const styles = StyleSheet.create({
     },
     contentContainer: {
         padding: 20,
-        paddingTop: 40,
+        paddingBottom: 180,
     },
     profileCard: {
         backgroundColor: "#111",
@@ -194,10 +336,11 @@ const styles = StyleSheet.create({
         alignItems: "center",
         borderWidth: 1,
         borderColor: "#333",
+        marginBottom: 20,
     },
     avatarContainer: {
         position: "relative",
-        marginBottom: 20,
+        marginBottom: 15,
     },
     cameraBtn: {
         position: "absolute",
@@ -218,84 +361,182 @@ const styles = StyleSheet.create({
     trainerBadge: {
         fontSize: 14,
         color: "#ff8c2b",
-        marginBottom: 25,
+        fontWeight: "600",
     },
-    infoSection: {
-        width: "100%",
-        marginTop: 20,
+    gymInfo: {
+        flexDirection: "row",
+        alignItems: "center",
+        marginTop: 12,
+    },
+    gymName: {
+        color: "#888",
+        fontSize: 14,
+        marginLeft: 6,
+    },
+    ratingContainer: {
+        flexDirection: "row",
+        alignItems: "center",
+        marginTop: 10,
+        backgroundColor: "#1a1a1a",
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 12,
+    },
+    ratingText: {
+        color: "#fff",
+        fontSize: 14,
+        marginLeft: 6,
+    },
+    section: {
+        backgroundColor: "#111",
+        borderRadius: 16,
+        padding: 20,
+        borderWidth: 1,
+        borderColor: "#222",
+        marginBottom: 20,
+    },
+    sectionHeader: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginBottom: 15,
     },
     sectionTitle: {
         fontSize: 18,
         fontWeight: "bold",
         color: "#fff",
-        marginBottom: 15,
     },
     infoRow: {
         flexDirection: "row",
-        justifyContent: "space-between",
+        alignItems: "center",
         paddingVertical: 12,
         borderBottomWidth: 1,
-        borderBottomColor: "#333",
+        borderBottomColor: "#222",
+    },
+    infoContent: {
+        marginLeft: 15,
+        flex: 1,
     },
     infoLabel: {
-        color: "#888",
-        fontSize: 14,
+        color: "#666",
+        fontSize: 12,
     },
     infoValue: {
         color: "#fff",
-        fontSize: 14,
-        fontWeight: "500",
-    },
-    inputGroup: {
-        marginBottom: 15,
+        fontSize: 15,
+        marginTop: 2,
     },
     label: {
         color: "#888",
         fontSize: 14,
-        marginBottom: 5,
+        marginBottom: 8,
+        fontWeight: "600",
     },
-    input: {
-        backgroundColor: "#080808",
+    helperText: {
+        color: "#666",
+        fontSize: 12,
+        marginBottom: 12,
+    },
+    specsGrid: {
+        flexDirection: "row",
+        flexWrap: "wrap",
+        gap: 8,
+    },
+    specChip: {
+        paddingHorizontal: 14,
+        paddingVertical: 8,
+        borderRadius: 16,
+        backgroundColor: "#000",
         borderWidth: 1,
         borderColor: "#333",
-        borderRadius: 8,
-        padding: 12,
+    },
+    specChipSelected: {
+        backgroundColor: "#ff8c2b",
+        borderColor: "#ff8c2b",
+    },
+    specChipText: {
+        fontSize: 13,
+        color: "#aaa",
+    },
+    specChipTextSelected: {
+        color: "#000",
+        fontWeight: "600",
+    },
+    selectedCount: {
+        fontSize: 12,
+        color: "#666",
+        textAlign: "right",
+        marginTop: 8,
+    },
+    specsDisplay: {
+        flexDirection: "row",
+        flexWrap: "wrap",
+        gap: 8,
+    },
+    specBadge: {
+        backgroundColor: "#ff8c2b20",
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 12,
+    },
+    specBadgeText: {
+        color: "#ff8c2b",
+        fontSize: 13,
+        fontWeight: "500",
+    },
+    emptyText: {
+        color: "#666",
+        fontSize: 14,
+        fontStyle: "italic",
+    },
+    bioInput: {
+        backgroundColor: "#000",
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: "#333",
+        padding: 14,
         color: "#fff",
-        fontSize: 16,
+        fontSize: 14,
+        minHeight: 100,
+    },
+    charCount: {
+        fontSize: 12,
+        color: "#666",
+        textAlign: "right",
+        marginTop: 6,
+    },
+    bioText: {
+        color: "#ccc",
+        fontSize: 14,
+        lineHeight: 22,
     },
     buttonContainer: {
         flexDirection: "row",
         padding: 20,
-        gap: 10,
-    },
-    editButton: {
-        flex: 1,
-        backgroundColor: "#ff8c2b",
-        padding: 15,
-        borderRadius: 12,
-        alignItems: "center",
-    },
-    editButtonText: {
-        color: "#000",
-        fontWeight: "bold",
-        fontSize: 16,
+        gap: 12,
+        backgroundColor: "#000",
+        borderTopWidth: 1,
+        borderTopColor: "#222",
     },
     saveButton: {
         flex: 1,
-        backgroundColor: "#00cc44",
-        padding: 15,
+        backgroundColor: "#ff8c2b",
+        padding: 16,
         borderRadius: 12,
         alignItems: "center",
     },
+    buttonDisabled: {
+        opacity: 0.6,
+    },
     saveButtonText: {
-        color: "#fff",
+        color: "#000",
         fontWeight: "bold",
         fontSize: 16,
     },
     cancelButton: {
         flex: 1,
         backgroundColor: "#333",
-        padding: 15,
+        padding: 16,
         borderRadius: 12,
         alignItems: "center",
     },
@@ -303,5 +544,24 @@ const styles = StyleSheet.create({
         color: "#fff",
         fontWeight: "bold",
         fontSize: 16,
+    },
+    bottomNav: {
+        flexDirection: "row",
+        justifyContent: "space-around",
+        padding: 12,
+        backgroundColor: "#111",
+        borderTopWidth: 1,
+        borderTopColor: "#222",
+    },
+    navItem: {
+        alignItems: "center",
+    },
+    navText: {
+        fontSize: 11,
+        color: "#666",
+        marginTop: 4,
+    },
+    navTextActive: {
+        color: "#ff8c2b",
     },
 });

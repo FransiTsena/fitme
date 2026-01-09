@@ -19,9 +19,9 @@ export default function TrainerMenu() {
 
     const menuItems = [
         { name: "My Profile", icon: "person", action: () => router.push("/trainer/profile") },
-        { name: "My Clients", icon: "people", action: () => router.push("/trainer/clients") },
-        { name: "Schedule", icon: "calendar", action: () => router.push("/trainer/schedule") },
-        { name: "Messages", icon: "chatbubble", action: () => router.push("/trainer/messages") },
+        { name: "My Clients", icon: "people", action: () => router.push("/trainer/clients" as any) },
+        { name: "My Sessions", icon: "fitness", action: () => router.push("/trainer/sessions" as any) },
+        { name: "Schedule", icon: "calendar", action: () => router.push("/trainer/schedule" as any) },
         { name: "Settings", icon: "settings", action: () => { } },
         { name: "Logout", icon: "log-out", action: logout },
     ];

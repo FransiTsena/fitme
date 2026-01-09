@@ -50,8 +50,12 @@ export const requireAuth = async (req: Request, res: Response, next: NextFunctio
             return res.status(401).json({ error: 'Invalid token. User not found.' });
         }
 
-        // Attach user to request
-        (req as any).user = user.toObject();
+        // Attach user to request (normalize _id to id)
+        const userObj = user.toObject();
+        (req as any).user = {
+            ...userObj,
+            id: userObj._id.toString(),
+        };
         next();
     } catch (error) {
         console.error('Authentication error:', error);
@@ -78,7 +82,11 @@ export const optionalAuth = async (req: Request, res: Response, next: NextFuncti
                     if (decoded && decoded.userId) {
                         const user = await User.findById(decoded.userId);
                         if (user) {
-                            (req as any).user = user.toObject();
+                            const userObj = user.toObject();
+                            (req as any).user = {
+                                ...userObj,
+                                id: userObj._id.toString(),
+                            };
                         }
                     }
                 }
