@@ -5,6 +5,9 @@ import axios from 'axios';
 import { MongoClient } from 'mongodb';
 import "dotenv/config";
 
+// Import the auth utility to create users directly
+import { auth } from '../utils/auth.js';
+
 interface GymData {
     ownerId: any;
     ownerName: string;
@@ -281,32 +284,39 @@ const seedGyms = async () => {
         // Wait a moment for deletions to process
         await new Promise(resolve => setTimeout(resolve, 1000));
 
-        // Create users via API calls
+        // Create users directly using Mongoose instead of API calls
         const createdUsers = [];
         for (const userData of sampleUsers) {
             try {
-                // Call the auth API to create the user
-                const response = await axios.post(`${process.env.BACKEND_URL || 'http://localhost:3005'}/api/auth/sign-up/email`, {
-                    ...userData,
-                    password: '12345678', // Default password as requested
-                    emailVerified: true
+                // Create user in the database directly
+                const user = new User({
+                    name: userData.name,
+                    email: userData.email,
+                    phone: userData.phone,
+                    role: userData.registrationRole,
+                    city: userData.city,
+                    area: userData.area,
+                    emailVerified: true, // Set as verified for seed data
+                    status: "active" // Set status as active for seed data
                 });
 
-                console.log(`Created user via API: ${userData.name} (${userData.email})`);
+                await user.save();
 
-                // Add to created users array with the user ID from the response
+                console.log(`Created user: ${userData.name} (${userData.email})`);
+
+                // Add to created users array with the user ID from the database
                 createdUsers.push({
-                    _id: response.data.user.id,
+                    _id: user._id,
                     ...userData
                 });
             } catch (error: any) {
-                console.error(`Error creating user ${userData.email}:`, error.response?.data || error.message || error);
+                console.error(`Error creating user ${userData.email}:`, error.message || error);
                 // Continue with other users
             }
         }
 
         if (createdUsers.length === 0) {
-            console.log('No users were created via API.');
+            console.log('No users were created.');
             process.exit(1);
         }
 
@@ -315,7 +325,7 @@ const seedGyms = async () => {
 
         // Ensure all users were created successfully
         if (allUsers.length === 0) {
-            console.log('No users were successfully created via API.');
+            console.log('No users were successfully created.');
             process.exit(1);
         }
 
@@ -323,8 +333,20 @@ const seedGyms = async () => {
         const gymsToInsert = sampleGyms.map((gym, index) => ({
             ...gym,
             ownerId: allUsers[index % allUsers.length]?._id,
-            verifiedAt: new Date(),
-            verificationDocuments: [],
+            name: gym.gymName, // Map gymName to name
+            location: { // Add required location with coordinates
+                type: "Point",
+                coordinates: [38.74687 + (index * 0.01), 9.018336 + (index * 0.01)] // Add different coordinates for each gym
+            },
+            address: { // Update address format
+                city: gym.city,
+                area: gym.area,
+                street: gym.address
+            },
+            photos: gym.images, // Map images to photos
+            verificationStatus: gym.status === 'suspended' ? 'rejected' : 'approved', // Map status
+            isActive: gym.status === 'active', // Map to isActive
+            rating: { average: 0, count: 0 }, // Add required rating field
             createdAt: new Date(),
             updatedAt: new Date()
         }));
