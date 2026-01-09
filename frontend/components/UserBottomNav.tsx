@@ -23,15 +23,15 @@ export function UserBottomNav() {
             {/* Workouts / Dumbbell */}
             <TouchableOpacity onPress={() => router.push("/member/user-workout")}>
                 <Ionicons
-                    name={isActive("/member/user-workout") || isActive("/workout-customization") || isActive("/workout-ai-welcome") || isActive("/workout-manual-plan") ? "barbell" : "barbell-outline"}
+                    name={isActive("/member/user-workout") || isActive("/member/workout-customization") || isActive("/member/workout-ai-welcome") || isActive("/member/workout-manual-plan") ? "barbell" : "barbell-outline"}
                     size={28}
-                    color={isActive("/member/user-workout") || isActive("/workout-customization") || isActive("/workout-ai-welcome") || isActive("/workout-manual-plan") ? "#ff8c2b" : "#666"}
+                    color={isActive("/member/user-workout") || isActive("/member/workout-customization") || isActive("/member/workout-ai-welcome") || isActive("/member/workout-manual-plan") ? "#ff8c2b" : "#666"}
                 />
             </TouchableOpacity>
 
             {/* Home */}
-            <TouchableOpacity onPress={() => router.push("/member/home")} >
-                <Ionicons name="home-outline" size={28} color={isActive("/member/home") ? "#ff8c2b" : "#666"} />
+            <TouchableOpacity onPress={() => router.push("/member/user-home")} >
+                <Ionicons name="home-outline" size={28} color={isActive("/member/user-home") ? "#ff8c2b" : "#666"} />
             </TouchableOpacity>
 
             {/* Schedule / Calendar */}

@@ -68,7 +68,7 @@ export default function UserWorkoutScreen() {
                 {/* Customize Button */}
                 <TouchableOpacity
                     style={styles.customizeBtnWrapper}
-                    onPress={() => router.push("/workout-customization")}
+                    onPress={() => router.push("/member/workout-customization")}
                 >
                     <LinearGradient
                         colors={['#ff8c2b', '#ff6b00']}

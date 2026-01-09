@@ -5,7 +5,7 @@ import { UserBottomNav } from "@/components/UserBottomNav";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { Stack, router } from "expo-router";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
     Dimensions,
     ImageBackground,
@@ -15,6 +15,7 @@ import {
     TouchableOpacity,
     View
 } from "react-native";
+import { useAuth } from "@/context/AuthContext";
 
 const { width } = Dimensions.get('window');
 
@@ -225,11 +226,60 @@ function CustomCalendar() {
 }
 
 // --- Main Screen ---
-import { useAuth } from "@/context/AuthContext";
-
 export default function UserHomeScreen() {
     const { user } = useAuth();
     const userRole = user?.role;
+    
+    // State for gyms
+    const [gyms, setGyms] = useState<any[]>([]);
+    const [loadingGyms, setLoadingGyms] = useState(true);
+    const [useLocation, setUseLocation] = useState(false); // Toggle between all gyms and nearby gyms
+    const [locationError, setLocationError] = useState<string | null>(null);
+    
+    // Fetch gyms from API
+    useEffect(() => {
+        const fetchGyms = async () => {
+            try {
+                let response;
+                
+                if (useLocation) {
+                    // For now, we'll use dummy coordinates for testing nearby functionality
+                    // In a real app, we would get the user's actual location
+                    const dummyLat = 9.018336;
+                    const dummyLng = 38.74687;
+                    
+                    response = await fetch(`${process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000'}/gyms/nearby?latitude=${dummyLat}&longitude=${dummyLng}&maxDistance=10`, {
+                        headers: {
+                            'Authorization': `Bearer ${user?.token}`,
+                            'Content-Type': 'application/json',
+                        },
+                    });
+                } else {
+                    response = await fetch(`${process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000'}/gyms`, {
+                        headers: {
+                            'Authorization': `Bearer ${user?.token}`,
+                            'Content-Type': 'application/json',
+                        },
+                    });
+                }
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    setGyms(data.data || data.gyms || []);
+                } else {
+                    console.error('Failed to fetch gyms:', response.status, response.statusText);
+                    setGyms([]);
+                }
+            } catch (error) {
+                console.error('Error fetching gyms:', error);
+                setGyms([]);
+            } finally {
+                setLoadingGyms(false);
+            }
+        };
+        
+        fetchGyms();
+    }, [user?.token, useLocation]);
 
     return (
         <View style={styles.container} testID="user-dashboard">
@@ -437,26 +487,37 @@ export default function UserHomeScreen() {
 
                 {/* Nearby Gyms */}
                 <View style={styles.sectionHeader}>
-                    <Text style={styles.sectionTitle}>Nearby Gyms</Text>
-                    <TouchableOpacity onPress={() => router.push("/explore")}>
-                        <Text style={styles.seeAllText}>Explore</Text>
-                    </TouchableOpacity>
+                    <Text style={styles.sectionTitle}>{useLocation ? 'Nearby Gyms' : 'All Gyms'}</Text>
+                    <View style={{flexDirection: 'row', gap: 15}}>
+                        <TouchableOpacity onPress={() => setUseLocation(!useLocation)}>
+                            <Text style={styles.seeAllText}>{useLocation ? 'Show All' : 'Show Nearby'}</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => router.push("/explore")}>
+                            <Text style={styles.seeAllText}>Explore</Text>
+                        </TouchableOpacity>
+                    </View>
                 </View>
 
-                <GymCard
-                    name="Location name"
-                    rating={4.8}
-                    reviews={500}
-                    distance="1.2 km"
-                    price="12,000birr"
-                />
-                <GymCard
-                    name="Location name"
-                    rating={4.8}
-                    reviews={500}
-                    distance="1.2 km"
-                    price="12,000birr"
-                />
+                {loadingGyms ? (
+                    <View style={styles.loadingContainer}>
+                        <Ionicons name="refresh" size={24} color="#ff8c2b" style={{marginRight: 10}} />
+                        <Text style={styles.loadingText}>Loading {useLocation ? 'nearby' : 'all'} gyms...</Text>
+                    </View>
+                ) : gyms.length > 0 ? (
+                    gyms.map((gym) => (
+                        <TouchableOpacity key={gym._id} onPress={() => router.push({pathname: '/member/gym-details', params: {id: gym._id}})}>
+                            <GymCard
+                                name={gym.name || "Unknown Gym"}
+                                rating={gym.rating?.average || 0}
+                                reviews={gym.rating?.count || 0}
+                                distance="N/A"  // Actual distance calculation would require user location
+                                price={gym.price ? `${gym.price} birr` : "N/A"}
+                            />
+                        </TouchableOpacity>
+                    ))
+                ) : (
+                    <Text style={styles.noGymsText}>No gyms found{(useLocation ? ' nearby' : '')}</Text>
+                )}
 
                 <View style={{ height: 100 }} />
             </ScrollView>
@@ -773,5 +834,39 @@ const styles = StyleSheet.create({
     sessionInfoText: {
         color: '#aaa',
         fontSize: 12,
+    },
+    loadingContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 20,
+    },
+    loadingText: {
+        color: '#ff8c2b',
+        fontSize: 16,
+    },
+    noGymsText: {
+        color: '#888',
+        textAlign: 'center',
+        padding: 20,
+        fontSize: 16,
+    },
+    locationErrorContainer: {
+        backgroundColor: '#332211',
+        padding: 16,
+        borderRadius: 8,
+        marginVertical: 10,
+        alignItems: 'center',
+    },
+    locationErrorText: {
+        color: '#ff8c2b',
+        fontSize: 14,
+        textAlign: 'center',
+        marginBottom: 10,
+    },
+    useAllGymsText: {
+        color: '#ff8c2b',
+        fontSize: 14,
+        fontWeight: 'bold',
     },
 });

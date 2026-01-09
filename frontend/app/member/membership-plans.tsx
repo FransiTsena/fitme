@@ -68,7 +68,7 @@ export default function MembershipPlansScreen() {
                             <TouchableOpacity>
                                 <Ionicons name="notifications-outline" size={24} color="#fff" />
                             </TouchableOpacity>
-                            <TouchableOpacity onPress={() => router.push("/owner-menu")}>
+                            <TouchableOpacity onPress={() => router.push("/member/menu")}>
                                 <Ionicons name="menu-outline" size={24} color="#fff" />
                             </TouchableOpacity>
                         </View>
@@ -129,19 +129,19 @@ export default function MembershipPlansScreen() {
 
             {/* Bottom Nav */}
             <View style={styles.bottomNav}>
-                <TouchableOpacity onPress={() => router.push("/owner/home")}>
+                <TouchableOpacity onPress={() => router.push("/member/user-home")}>
                     <Ionicons name="home-outline" size={24} color="#666" />
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => router.push("/members-list-owner")}>
-                    <Ionicons name="people-outline" size={24} color="#666" />
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => router.push("/trainers-list-owner")}>
+                <TouchableOpacity onPress={() => router.push("/member/user-workout")}>
                     <Ionicons name="barbell-outline" size={24} color="#666" />
                 </TouchableOpacity>
                 <TouchableOpacity>
                     <Ionicons name="disc" size={24} color="#ff8c2b" />
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => router.push("/owner-profile")}>
+                <TouchableOpacity onPress={() => router.push("/explore")}>
+                    <Ionicons name="compass-outline" size={24} color="#666" />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => router.push("/member/profile")}>
                     <Ionicons name="person-outline" size={24} color="#666" />
                 </TouchableOpacity>
             </View>

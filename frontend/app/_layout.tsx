@@ -22,18 +22,18 @@ export default function RootLayout() {
           <Stack.Screen name="login" options={{ headerShown: false }} />
           <Stack.Screen name="signup" options={{ headerShown: false }} />
           <Stack.Screen name="forgot-password" options={{ headerShown: false }} />
-          <Stack.Screen name="owner/home" options={{ headerShown: false }} />
+          <Stack.Screen name="owner/owner-home" options={{ headerShown: false }} />
           <Stack.Screen name="owner/menu" options={{ presentation: 'transparentModal', animation: 'fade', headerShown: false }} />
           <Stack.Screen name="owner/profile" options={{ headerShown: false }} />
           <Stack.Screen name="owner/members-list-owner" options={{ headerShown: false }} />
           <Stack.Screen name="owner/trainers-list-owner" options={{ headerShown: false }} />
-          <Stack.Screen name="trainer/home" options={{ headerShown: false }} />
+          <Stack.Screen name="trainer/trainer-home" options={{ headerShown: false }} />
           <Stack.Screen name="trainer/menu" options={{ presentation: 'transparentModal', animation: 'fade', headerShown: false }} />
           <Stack.Screen name="trainer/profile" options={{ headerShown: false }} />
           <Stack.Screen name="trainer/clients" options={{ headerShown: false }} />
           <Stack.Screen name="trainer/schedule" options={{ headerShown: false }} />
           <Stack.Screen name="trainer/messages" options={{ headerShown: false }} />
-          <Stack.Screen name="member/home" options={{ headerShown: false }} />
+          <Stack.Screen name="member/user-home" options={{ headerShown: false }} />
           <Stack.Screen name="member/day-plan-customization" options={{ headerShown: false }} />
           <Stack.Screen name="member/menu" options={{ presentation: 'transparentModal', animation: 'fade', headerShown: false }} />
           <Stack.Screen name="member/profile" options={{ headerShown: false }} />
@@ -42,6 +42,7 @@ export default function RootLayout() {
           <Stack.Screen name="member/workout-ai-welcome" options={{ headerShown: false }} />
           <Stack.Screen name="member/workout-customization" options={{ headerShown: false }} />
           <Stack.Screen name="member/workout-manual-plan" options={{ headerShown: false }} />
+          <Stack.Screen name="member/gym-details" options={{ headerShown: false }} />
         </Stack>
         <StatusBar style="auto" />
       </ThemeProvider>

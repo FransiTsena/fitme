@@ -65,29 +65,29 @@ export default function LoginScreen() {
                     if (documentStatus === 'pending' || documentStatus === 'not_submitted') {
                         // Owner needs to submit documents or is pending approval
                         // Navigate to owner home which should guide them to submit documents
-                        console.log('Navigating owner to owner/home (pending)');
-                        router.replace('/owner/home');
+                        console.log('Navigating owner to owner/owner-home (pending)');
+                        router.replace('/owner/owner-home');
                     } else if (documentStatus === 'approved') {
                         // Approved owner - can access full owner features
-                        console.log('Navigating owner to owner/home (approved)');
-                        router.replace('/owner/home');
+                        console.log('Navigating owner to owner/owner-home (approved)');
+                        router.replace('/owner/owner-home');
                     } else if (documentStatus === 'rejected') {
                         // Rejected owner - may need to resubmit documents
-                        console.log('Navigating owner to owner/home (rejected)');
-                        router.replace('/owner/home');
+                        console.log('Navigating owner to owner/owner-home (rejected)');
+                        router.replace('/owner/owner-home');
                     } else {
                         // Default case for owner
-                        console.log('Navigating owner to owner/home (default)');
-                        router.replace('/owner/home');
+                        console.log('Navigating owner to owner/owner-home (default)');
+                        router.replace('/owner/owner-home');
                     }
                 } else if (userRole === 'trainer') {
                     // Trainers go to their respective home screen
-                    console.log('Navigating trainer to trainer/home');
-                    router.replace('/trainer/home');
+                    console.log('Navigating trainer to trainer/trainer-home');
+                    router.replace('/trainer/trainer-home');
                 } else {
                     // Members and other roles go to regular user home
-                    console.log('Navigating member to user-home');
-                    router.replace('/member/home');
+                    console.log('Navigating member to member/user-home');
+                    router.replace('/member/user-home');
                 }
             } else {
                 Alert.alert("Login Failed", result.error);

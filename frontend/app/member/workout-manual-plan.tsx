@@ -100,7 +100,7 @@ export default function WorkoutManualPlanScreen() {
                             <TouchableOpacity
                                 style={styles.buttonWrapper}
                                 onPress={() => router.push({
-                                    pathname: "/day-plan-customization",
+                                    pathname: "/member/day-plan-customization",
                                     params: { day }
                                 })}
                             >
