@@ -43,7 +43,7 @@ export default function GymPlansScreen() {
                 }
 
                 // Fetch gym plans
-                const plansResponse = await fetch(`${API_BASE_URL}/memberships/gym/${gymId}`, {
+                const plansResponse = await fetch(`${process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000'}/memberships/gym/${gymId}`, {
                     headers: {
                         'Authorization': `Bearer ${user?.token}`,
                         'Content-Type': 'application/json',
@@ -72,7 +72,7 @@ export default function GymPlansScreen() {
 
     const handleSubscribe = async (planId: string) => {
         try {
-            const response = await fetch(`${API_BASE_URL}/subscriptions/purchase`, {
+            const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000'}/subscriptions/purchase`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${user?.token}`,

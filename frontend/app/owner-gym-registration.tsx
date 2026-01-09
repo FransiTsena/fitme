@@ -36,7 +36,7 @@ export default function OwnerGymRegistrationScreen() {
 
         try {
             // Call the backend API to register the gym
-            const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3005/api'}/gyms`, {
+            const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000'}/gyms`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

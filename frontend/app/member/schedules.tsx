@@ -28,7 +28,7 @@ export default function SchedulesScreen() {
         const fetchUserData = async () => {
             try {
                 // First, get user's active memberships
-                const membershipsResponse = await fetch(`${API_BASE_URL}/subscriptions/my`, {
+                const membershipsResponse = await fetch(`${process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000'}/subscriptions/my`, {
                     headers: {
                         'Authorization': `Bearer ${user?.token}`,
                         'Content-Type': 'application/json',

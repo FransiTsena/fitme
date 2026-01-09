@@ -91,7 +91,7 @@ export default function BookSessionScreen() {
 
         setBooking(true);
         try {
-            const response = await fetch(`${API_BASE_URL}/bookings/book`, {
+            const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000'}/bookings/book`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${user?.token}`,
