@@ -20,14 +20,14 @@ const { width } = Dimensions.get('window');
 const getNestedValue = (obj: any, path: string, defaultValue: any = 'N/A') => {
     const keys = path.split('.');
     let current = obj;
-    
+
     for (const key of keys) {
         if (current === null || current === undefined) {
             return defaultValue;
         }
         current = current[key];
     }
-    
+
     return current !== undefined && current !== null ? current : defaultValue;
 };
 
@@ -42,7 +42,7 @@ export default function GymDetailsScreen() {
             try {
                 const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
                 console.log('Fetching gym from:', `${apiUrl}/gyms/${id}`);
-                
+
                 const response = await fetch(`${apiUrl}/gyms/${id}`, {
                     headers: {
                         'Authorization': `Bearer ${user?.token}`,
@@ -53,13 +53,13 @@ export default function GymDetailsScreen() {
                 if (response.ok) {
                     const data = await response.json();
                     console.log('Raw gym data received:', data);
-                    
+
                     // Handle different response formats
                     const gymData = data.gym || data.data || data;
-                    
+
                     // Log the processed gym data
                     console.log('Processed gym data:', gymData);
-                    
+
                     setGym(gymData);
                 } else {
                     console.error('Failed to fetch gym:', response.status, response.statusText);
@@ -211,7 +211,7 @@ export default function GymDetailsScreen() {
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Amenities</Text>
                     <View style={styles.amenitiesContainer}>
-                        {(gym.amenities || gym.amenityList || gym.amenitiesList || []).length > 0 ? 
+                        {(gym.amenities || gym.amenityList || gym.amenitiesList || []).length > 0 ?
                             (gym.amenities || gym.amenityList || gym.amenitiesList || []).map((amenity: string, index: number) => (
                                 <View key={index} style={styles.amenityTag}>
                                     <Text style={styles.amenityText}>{amenity}</Text>
