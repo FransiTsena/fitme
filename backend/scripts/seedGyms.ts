@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import { Gym } from '../models/gymModel.js';
 import { User } from '../models/userModel.js';
+import { MembershipPlan } from '../models/membershipModel.js';
 import bcrypt from 'bcrypt';
 import "dotenv/config";
 
@@ -542,6 +543,76 @@ const seedGyms = async () => {
         // Insert gyms
         await Gym.insertMany(gymsToInsert);
         console.log(`Inserted ${gymsToInsert.length} gyms`);
+
+        // Create membership plans for each gym
+        const membershipPlansData = [
+            {
+                title: "Daily Pass",
+                description: "Access to the gym for one day",
+                durationInDays: 1,
+                price: 100,
+                isActive: true
+            },
+            {
+                title: "Weekly Pass",
+                description: "Access to the gym for 7 days",
+                durationInDays: 7,
+                price: 500,
+                isActive: true
+            },
+            {
+                title: "Monthly Pass",
+                description: "Unlimited access to the gym for 30 days",
+                durationInDays: 30,
+                price: 1500,
+                isActive: true
+            },
+            {
+                title: "Quarterly Pass",
+                description: "Unlimited access to the gym for 90 days",
+                durationInDays: 90,
+                price: 3500,
+                isActive: true
+            },
+            {
+                title: "Annual Pass",
+                description: "Unlimited access to the gym for 365 days",
+                durationInDays: 365,
+                price: 12000,
+                isActive: true
+            }
+        ];
+
+        // Clear existing membership plans
+        await MembershipPlan.deleteMany({});
+        console.log('Cleared existing membership plans');
+
+        // Fetch the inserted gyms to get their IDs
+        const insertedGyms = await Gym.find({}).select('_id ownerId name');
+        
+        // Create membership plans for each gym
+        let totalPlansCreated = 0;
+        for (const gym of insertedGyms) {
+            console.log(`Creating plans for gym: ${gym.name}`);
+            
+            for (const planData of membershipPlansData) {
+                const plan = new MembershipPlan({
+                    gymId: gym._id,
+                    ownerId: gym.ownerId,
+                    title: planData.title,
+                    description: planData.description,
+                    durationInDays: planData.durationInDays,
+                    price: planData.price,
+                    isActive: planData.isActive
+                });
+
+                await plan.save();
+                totalPlansCreated++;
+                console.log(`  - Created plan: ${planData.title} for ${gym.name}`);
+            }
+        }
+
+        console.log(`\nSuccessfully created ${totalPlansCreated} membership plans for ${insertedGyms.length} gyms`);
 
         // Disconnect from database
         await mongoose.disconnect();
