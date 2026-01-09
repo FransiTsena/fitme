@@ -192,6 +192,31 @@ export const gymService = {
         }
     },
 
+    // Get nearby gyms based on location
+    getNearbyGyms: async (latitude: number, longitude: number, maxDistanceKm: number = 10) => {
+        try {
+            const maxDistanceInMeters = maxDistanceKm * 1000; // Convert km to meters
+            
+            const gyms = await Gym.find({
+                location: {
+                    $near: {
+                        $geometry: {
+                            type: "Point",
+                            coordinates: [longitude, latitude] // GeoJSON format: [longitude, latitude]
+                        },
+                        $maxDistance: maxDistanceInMeters
+                    }
+                },
+                isActive: true, // Only return active gyms
+                verificationStatus: 'approved' // Only return approved gyms
+            }).populate('ownerId', 'name email phone');
+            
+            return gyms;
+        } catch (error) {
+            throw error;
+        }
+    },
+
     // Update gym verification status
     updateVerificationStatus: async (id: string, status: 'approved' | 'rejected', isActive?: boolean) => {
         try {

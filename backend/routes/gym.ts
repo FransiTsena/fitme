@@ -6,7 +6,8 @@ import {
     getGymsByOwner,
     updateGym,
     deleteGym,
-    updateGymVerificationStatus
+    updateGymVerificationStatus,
+    getNearbyGyms
 } from '../controllers/gymController.js';
 
 import { requireAuth } from '../middleware/requireAuth.js';
@@ -28,6 +29,10 @@ router.route('/:id')
 // Routes for gyms by owner
 router.route('/owner/:ownerId')
     .get(requireAuth, getGymsByOwner); // Only authenticated users can view their own gyms
+
+// Get nearby gyms
+router.route('/nearby')
+    .get(getNearbyGyms);              // Anyone can view nearby gyms
 
 // Route to update gym verification status (for admin)
 router.route('/:id/verification-status')

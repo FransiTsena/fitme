@@ -69,6 +69,41 @@ export const getAllGyms = async (req: Request, res: Response) => {
     }
 };
 
+export const getNearbyGyms = async (req: Request, res: Response) => {
+    try {
+        const { latitude, longitude, maxDistance } = req.query;
+
+        if (!latitude || !longitude) {
+            return res.status(400).json({
+                success: false,
+                message: 'Latitude and longitude are required'
+            });
+        }
+
+        const lat = parseFloat(latitude as string);
+        const lng = parseFloat(longitude as string);
+        const maxDist = maxDistance ? parseFloat(maxDistance as string) : 10; // default 10km
+
+        if (isNaN(lat) || isNaN(lng)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid latitude or longitude values'
+            });
+        }
+
+        const gyms = await gymService.getNearbyGyms(lat, lng, maxDist);
+        res.status(200).json({
+            success: true,
+            data: gyms
+        });
+    } catch (error: any) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
 export const getGymById = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
