@@ -8,6 +8,9 @@ const userSchema = new mongoose.Schema({
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },
 
+    // Authentication Fields
+    password: { type: String, required: true }, // In a real app, you'd want to hash passwords
+
     // Custom Fields
     fatherName: { type: String },
     phone: { type: String },
@@ -45,6 +48,7 @@ export interface IUser {
     image?: string;
     createdAt: Date;
     updatedAt: Date;
+    password: string;
     fatherName?: string;
     phone?: string;
     role: string;

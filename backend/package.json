@@ -10,7 +10,7 @@
     "test:auth": "tsx test/auth.test.ts",
     "test:flow": "tsx test/flow.test.ts",
     "test:upload": "tsx test/upload.test.ts",
-    "test:membership": "tsx test/membership.test.ts", 
+    "test:membership": "tsx test/membership.test.ts",
     "test:trainer": "tsx test/trainer.test.ts",
     "test:analytics": "tsx test/analytics.test.ts",
     "test:session": "tsx test/training_session.test.ts",
@@ -29,7 +29,6 @@
   "dependencies": {
     "axios": "^1.8.3",
     "bcrypt": "^5.1.1",
-    "better-auth": "^1.4.9",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^5.1.0",

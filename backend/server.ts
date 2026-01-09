@@ -6,8 +6,7 @@ import cors from "cors";
 import path from "path";
 import mongoose from "mongoose";
 import { fileURLToPath } from "url";
-import { toNodeHandler } from "better-auth/node";
-import { auth } from "./utils/auth.js";
+
 import userRoutes from "./routes/user.js";
 import gymRoutes from "./routes/gym.js";
 import membershipRoutes from "./routes/membership.js";
@@ -57,9 +56,7 @@ app.use("/", async (req, res, next) => {
   next();
 })
 
-// 🔥 IMPORTANT: Better Auth routes for JWT authentication
-// MUST be before express.json()
-app.all("/api/auth/{*any}", toNodeHandler(auth));
+
 
 // JSON middleware
 app.use(express.json());
@@ -102,5 +99,5 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
 
 // Start server
 app.listen(port, () => {
-  console.log(`✅ Better Auth (JWT) app listening on port ${port}`);
+  console.log("✅ JWT Auth app listening on port ${port}");
 });
