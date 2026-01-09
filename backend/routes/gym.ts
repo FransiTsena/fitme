@@ -7,6 +7,8 @@ import {
     updateGym,
     deleteGym,
     updateGymVerificationStatus,
+    getGymMembers,
+    getGymTrainers,
     getNearbyGyms
 } from '../controllers/gymController.js';
 
@@ -14,10 +16,16 @@ import { requireAuth } from '../middleware/requireAuth.js';
 
 const router = express.Router();
 
-// All gym routesu
+// All gym routes
 router.route('/')
     .post(createGym)  // Auth removed for testing
     .get(getAllGyms);              // Anyone can view all gyms
+
+// Get nearby gyms - MUST come before /:id to avoid conflict
+router.get('/nearby', getNearbyGyms);
+
+// Routes for gyms by owner - MUST come before /:id to avoid conflict
+router.get('/owner/:ownerId', requireAuth, getGymsByOwner);
 
 // Routes for specific gym
 router.route('/:id')
@@ -25,18 +33,12 @@ router.route('/:id')
     .put(updateGym)                // Auth removed for testing
     .delete(deleteGym);            // Auth removed for testing
 
-
-// Routes for gyms by owner
-router.route('/owner/:ownerId')
-    .get(requireAuth, getGymsByOwner); // Only authenticated users can view their own gyms
-
-// Get nearby gyms
-router.route('/nearby')
-    .get(getNearbyGyms);              // Anyone can view nearby gyms
-
 // Route to update gym verification status (for admin)
-router.route('/:id/verification-status')
-    .put(updateGymVerificationStatus); // Auth removed for testing
+router.put('/:id/verification-status', updateGymVerificationStatus);
+
+// Routes for gym members and trainers
+router.get('/:gymId/members', requireAuth, getGymMembers);
+router.get('/:gymId/trainers', requireAuth, getGymTrainers);
 
 
 export default router;

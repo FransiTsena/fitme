@@ -17,6 +17,10 @@ interface AuthContextType {
         registrationRole: string;
         city?: string;
         area?: string;
+        // Trainer-specific fields
+        specialization?: string[];
+        bio?: string;
+        gymId?: string;
     }) => Promise<{ success: boolean; error?: string }>;
     logout: () => void;
     fetchUser: () => Promise<void>;

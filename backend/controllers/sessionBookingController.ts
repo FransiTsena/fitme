@@ -47,3 +47,50 @@ export const getMyBookings = async (req: Request, res: Response) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+export const getTrainerBookings = async (req: Request, res: Response) => {
+    try {
+        const userId = req.user?.id || req.query.userId as string;
+
+        if (!userId) {
+            return res.status(401).json({ error: "Unauthorized" });
+        }
+
+        const bookings = await sessionBookingService.getTrainerBookings(userId);
+        res.status(200).json({ bookings });
+
+    } catch (error: any) {
+        console.error("Get Trainer Bookings Error:", error);
+        res.status(500).json({ error: error.message });
+    }
+};
+
+export const updateBookingStatus = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const { status } = req.body;
+        const userId = req.user?.id || req.body.userId;
+
+        if (!userId) {
+            return res.status(401).json({ error: "Unauthorized" });
+        }
+
+        if (!id) {
+            return res.status(400).json({ error: "Booking ID is required" });
+        }
+
+        if (!status || !["completed", "cancelled"].includes(status)) {
+            return res.status(400).json({ error: "Invalid status. Must be 'completed' or 'cancelled'" });
+        }
+
+        const booking = await sessionBookingService.updateBookingStatus(id, status, userId);
+        res.status(200).json({ 
+            message: `Booking ${status}`,
+            booking 
+        });
+
+    } catch (error: any) {
+        console.error("Update Booking Status Error:", error);
+        res.status(400).json({ error: error.message });
+    }
+};

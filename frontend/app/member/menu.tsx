@@ -19,8 +19,11 @@ export default function MemberMenu() {
 
     const menuItems = [
         { name: "My Profile", icon: "person", action: () => router.push("/member/profile") },
-        { name: "My Workout", icon: "barbell", action: () => router.push("/member/user-workout") },
-        { name: "Plans", icon: "list", action: () => router.push("/member/membership-plans") },
+        { name: "My Subscriptions", icon: "card", action: () => router.push("/member/my-subscriptions") },
+        { name: "My Bookings", icon: "calendar", action: () => router.push("/member/my-bookings") },
+        { name: "Find Sessions", icon: "barbell", action: () => router.push("/member/schedules") },
+        { name: "Find Gyms", icon: "fitness", action: () => router.push("/member/gym-selection") },
+        { name: "My Workout", icon: "body", action: () => router.push("/member/user-workout") },
         { name: "AI Workout", icon: "sparkles", action: () => router.push("/member/workout-ai-welcome") },
         { name: "Settings", icon: "settings", action: () => { } },
         { name: "Logout", icon: "log-out", action: logout },

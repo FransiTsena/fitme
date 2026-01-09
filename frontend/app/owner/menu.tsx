@@ -8,8 +8,17 @@ import {
     TouchableOpacity,
     View
 } from "react-native";
+import { useAuth } from "@/context/AuthContext";
 
 export default function OwnerMenuModal() {
+    const { logout } = useAuth();
+
+    const handleLogout = () => {
+        logout();
+        router.dismissAll();
+        router.replace("/");
+    };
+
     return (
         <View style={styles.container}>
             <Stack.Screen options={{ headerShown: false }} />
@@ -53,14 +62,7 @@ export default function OwnerMenuModal() {
 
                 <View style={styles.divider} />
 
-                <TouchableOpacity
-                    style={styles.menuItem}
-                    onPress={() => {
-                        // Navigate to login (index) and replace history so they can't go back
-                        router.dismissAll();
-                        router.replace("/");
-                    }}
-                >
+                <TouchableOpacity style={styles.menuItem} onPress={handleLogout}>
                     <Ionicons name="log-out-outline" size={24} color="#ff4444" />
                     <Text style={styles.logoutText}>Log Out</Text>
                 </TouchableOpacity>

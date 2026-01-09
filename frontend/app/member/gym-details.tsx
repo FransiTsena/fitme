@@ -10,11 +10,20 @@ import {
     Image,
     TouchableOpacity,
     Alert,
-    Dimensions
+    Dimensions,
+    Platform,
 } from "react-native";
 import { useAuth } from "@/context/AuthContext";
 
 const { width } = Dimensions.get('window');
+
+// Platform-aware API URL
+const DEFAULT_API_BASE_URL = Platform.select({
+    android: 'http://10.0.2.2:3005/api',
+    ios: 'http://127.0.0.1:3005/api',
+    default: 'http://127.0.0.1:3005/api',
+});
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || DEFAULT_API_BASE_URL;
 
 // Utility function to safely get nested values
 const getNestedValue = (obj: any, path: string, defaultValue: any = 'N/A') => {
@@ -40,10 +49,9 @@ export default function GymDetailsScreen() {
     useEffect(() => {
         const fetchGym = async () => {
             try {
-                const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
-                console.log('Fetching gym from:', `${apiUrl}/gyms/${id}`);
+                console.log('Fetching gym from:', `${API_BASE_URL}/gyms/${id}`);
 
-                const response = await fetch(`${apiUrl}/gyms/${id}`, {
+                const response = await fetch(`${API_BASE_URL}/gyms/${id}`, {
                     headers: {
                         'Authorization': `Bearer ${user?.token}`,
                         'Content-Type': 'application/json',

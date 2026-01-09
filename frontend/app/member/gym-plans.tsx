@@ -1,13 +1,20 @@
 import { Logo } from '@/components/Logo';
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
-import { Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, FlatList, Platform, StyleSheet, TouchableOpacity, View } from 'react-native';
 
 import { UserBottomNav } from '@/components/UserBottomNav';
 import { ThemedText } from '@/components/themed-text';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { useAuth } from '@/context/AuthContext';
 import React, { useEffect, useState } from 'react';
+
+const DEFAULT_API_BASE_URL = Platform.select({
+    android: 'http://10.0.2.2:3005/api',
+    ios: 'http://127.0.0.1:3005/api',
+    default: 'http://127.0.0.1:3005/api',
+});
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || DEFAULT_API_BASE_URL;
 
 export default function GymPlansScreen() {
     const { user } = useAuth();
@@ -21,7 +28,7 @@ export default function GymPlansScreen() {
         const fetchGymAndPlans = async () => {
             try {
                 // Fetch gym details
-                const gymResponse = await fetch(`${process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000'}/gyms/${gymId}`, {
+                const gymResponse = await fetch(`${API_BASE_URL}/gyms/${gymId}`, {
                     headers: {
                         'Authorization': `Bearer ${user?.token}`,
                         'Content-Type': 'application/json',
@@ -75,7 +82,7 @@ export default function GymPlansScreen() {
             });
 
             if (response.ok) {
-                const result = await response.json();
+                await response.json();
                 Alert.alert('Success', 'Successfully subscribed to the gym!', [
                     { text: 'OK', onPress: () => router.push('/member/user-home') }
                 ]);

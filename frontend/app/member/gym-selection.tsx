@@ -1,7 +1,7 @@
 import { Logo } from '@/components/Logo';
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, router } from 'expo-router';
-import { FlatList, StyleSheet, Text, TouchableOpacity, View, Alert } from 'react-native';
+import { FlatList, StyleSheet, Text, TouchableOpacity, View, Alert, Platform } from 'react-native';
 
 import { GymCard } from '@/components/GymCard';
 import { UserBottomNav } from '@/components/UserBottomNav';
@@ -9,6 +9,14 @@ import { ThemedText } from '@/components/themed-text';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { useAuth } from '@/context/AuthContext';
 import React, { useEffect, useState } from 'react';
+
+// Platform-aware API URL
+const DEFAULT_API_BASE_URL = Platform.select({
+    android: 'http://10.0.2.2:3005/api',
+    ios: 'http://127.0.0.1:3005/api',
+    default: 'http://127.0.0.1:3005/api',
+});
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || DEFAULT_API_BASE_URL;
 
 export default function GymSelectionScreen() {
     const { user } = useAuth();
@@ -19,7 +27,7 @@ export default function GymSelectionScreen() {
     useEffect(() => {
         const fetchGyms = async () => {
             try {
-                const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000'}/gyms`, {
+                const response = await fetch(`${API_BASE_URL}/gyms`, {
                     headers: {
                         'Authorization': `Bearer ${user?.token}`,
                         'Content-Type': 'application/json',

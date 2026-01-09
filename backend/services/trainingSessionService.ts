@@ -43,6 +43,19 @@ export const trainingSessionService = {
     },
 
     /**
+     * Get sessions by user ID (looks up trainer first)
+     */
+    getSessionsByUser: async (userId: string) => {
+        const trainer = await Trainer.findOne({ userId });
+        if (!trainer) {
+            throw new Error("Trainer profile not found");
+        }
+        
+        return await TrainingSession.find({ trainerId: trainer._id })
+            .sort({ createdAt: -1 });
+    },
+
+    /**
      * Get sessions by gym (Public View)
      */
     getSessionsByGym: async (gymId: string) => {

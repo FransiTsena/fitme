@@ -1,6 +1,7 @@
 import { generateToken } from "../utils/jwtAuth.js";
 import { User } from "../models/userModel.js";
 import { Gym } from "../models/gymModel.js";
+import { Trainer } from "../models/trainerModel.js";
 import { sendEmail } from "../utils/email.js";
 import { ObjectId } from "mongodb";
 import bcrypt from 'bcrypt';
@@ -11,7 +12,7 @@ export const userService = {
    */
   signup: async (userData: any) => {
     // Extract user data
-    const { email, password, name, phone, fatherName, registrationRole, city, area } = userData;
+    const { email, password, name, phone, fatherName, registrationRole, city, area, specialization, bio, gymId } = userData;
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
@@ -20,7 +21,30 @@ export const userService = {
     }
 
     // Determine role based on registrationRole
-    const role = registrationRole === 'owner' ? 'owner' : 'member';
+    let role = 'member';
+    if (registrationRole === 'owner') {
+      role = 'owner';
+    } else if (registrationRole === 'trainer') {
+      role = 'trainer';
+    }
+
+    // For trainer signup, validate required fields
+    if (role === 'trainer') {
+      if (!specialization || !Array.isArray(specialization) || specialization.length === 0) {
+        throw new Error('Trainers must select at least one specialization');
+      }
+      if (!bio || bio.trim().length < 20) {
+        throw new Error('Trainers must provide a bio (at least 20 characters)');
+      }
+      if (!gymId) {
+        throw new Error('Trainers must select a gym to work at');
+      }
+      // Verify gym exists
+      const gym = await Gym.findById(gymId);
+      if (!gym) {
+        throw new Error('Selected gym does not exist');
+      }
+    }
 
     // Hash password before saving
     const saltRounds = 10;
@@ -36,17 +60,33 @@ export const userService = {
       role,
       city,
       area,
-      documentStatus: role === 'owner' ? 'not_submitted' : 'not_submitted', // Both owners and members have document status, but members don't need verification
+      documentStatus: role === 'owner' ? 'not_submitted' : 'not_submitted',
     });
 
     await newUser.save();
 
+    // If trainer, create trainer profile
+    if (role === 'trainer') {
+      const trainerProfile = new Trainer({
+        userId: newUser._id,
+        gymId: gymId,
+        specialization: specialization,
+        bio: bio.trim(),
+        isActive: true,
+      });
+      await trainerProfile.save();
+    }
+
     // Generate JWT token
     const token = generateToken(newUser._id.toString(), newUser.role);
 
-    // Return user data and token
+    // Return user data and token (normalize _id to id for frontend)
+    const userObj = newUser.toObject();
     return {
-      user: newUser.toObject(),
+      user: {
+        ...userObj,
+        id: userObj._id.toString(),
+      },
       token,
     };
   },
@@ -70,8 +110,13 @@ export const userService = {
     // Generate JWT token
     const token = generateToken(user._id.toString(), user.role);
 
+    // Normalize _id to id for frontend
+    const userObj = user.toObject();
     return {
-      user: user.toObject(),
+      user: {
+        ...userObj,
+        id: userObj._id.toString(),
+      },
       token,
     };
   },

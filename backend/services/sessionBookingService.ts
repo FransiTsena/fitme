@@ -2,6 +2,7 @@ import { SessionBooking } from "../models/sessionBookingModel.js";
 import { TrainingSession } from "../models/trainingSessionModel.js";
 import { UserMembership } from "../models/userMembershipModel.js";
 import { Payment } from "../models/paymentModel.js";
+import { Trainer } from "../models/trainerModel.js";
 import { Types } from "mongoose";
 
 export const sessionBookingService = {
@@ -73,8 +74,53 @@ export const sessionBookingService = {
      */
     getMemberBookings: async (memberId: string) => {
         return await SessionBooking.find({ memberId })
-            .populate("sessionId", "title durationMinutes")
-            .populate("trainerId", "specialization") // Need to populate user from trainer if we want name
+            .populate("sessionId", "title description durationMinutes price")
+            .populate("gymId", "name address")
+            .populate("trainerId", "specialization userId") 
             .sort({ scheduledDate: -1 });
+    },
+
+    /**
+     * Get Trainer's Bookings
+     */
+    getTrainerBookings: async (userId: string) => {
+        // First get the trainer profile
+        const trainer = await Trainer.findOne({ userId });
+        if (!trainer) {
+            throw new Error("Trainer profile not found");
+        }
+
+        return await SessionBooking.find({ trainerId: trainer._id })
+            .populate("sessionId", "title durationMinutes price")
+            .populate("memberId", "name email phone profileImage")
+            .sort({ scheduledDate: -1 });
+    },
+
+    /**
+     * Update Booking Status
+     */
+    updateBookingStatus: async (bookingId: string, status: "completed" | "cancelled", userId: string) => {
+        // Verify the booking exists
+        const booking = await SessionBooking.findById(bookingId);
+        if (!booking) {
+            throw new Error("Booking not found");
+        }
+
+        // Verify ownership - check if user is the trainer
+        const trainer = await Trainer.findOne({ userId });
+        if (!trainer || booking.trainerId.toString() !== trainer._id.toString()) {
+            throw new Error("Unauthorized to update this booking");
+        }
+
+        // Only allow updating 'booked' status
+        if (booking.status !== "booked") {
+            throw new Error(`Cannot update a ${booking.status} booking`);
+        }
+
+        // Update status
+        booking.status = status;
+        await booking.save();
+
+        return booking;
     }
 };

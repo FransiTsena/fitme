@@ -36,6 +36,23 @@ export const createSession = async (req: Request, res: Response) => {
     }
 };
 
+export const getMySessions = async (req: Request, res: Response) => {
+    try {
+        const userId = req.user?.id || req.query.userId as string;
+
+        if (!userId) {
+            return res.status(401).json({ error: "Unauthorized" });
+        }
+
+        const sessions = await trainingSessionService.getSessionsByUser(userId);
+        res.status(200).json({ sessions });
+
+    } catch (error: any) {
+        console.error("Get My Sessions Error:", error);
+        res.status(500).json({ error: error.message });
+    }
+};
+
 export const getGymSessions = async (req: Request, res: Response) => {
     try {
         const { gymId } = req.params;

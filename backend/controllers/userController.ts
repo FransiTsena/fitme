@@ -7,7 +7,7 @@ import { userService } from "../services/userService.js";
  */
 export const signupUser = async (req: Request, res: Response) => {
   try {
-    const { email, password, name, phone, fatherName, registrationRole, city, area } = req.body;
+    const { email, password, name, phone, fatherName, registrationRole, city, area, specialization, bio, gymId } = req.body;
 
     if (!email || !password || !name) {
       return res.status(400).json({ error: "Email, password, and name are required" });
@@ -22,6 +22,9 @@ export const signupUser = async (req: Request, res: Response) => {
       registrationRole,
       city,
       area,
+      specialization,
+      bio,
+      gymId,
     });
 
     res.status(201).json({

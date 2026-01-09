@@ -235,3 +235,65 @@ export const updateGymVerificationStatus = async (req: Request, res: Response) =
         });
     }
 };
+
+export const getGymMembers = async (req: Request, res: Response) => {
+    try {
+        const { gymId } = req.params;
+        const { status, search } = req.query;
+
+        if (!gymId) {
+            return res.status(400).json({
+                success: false,
+                message: 'Gym ID is required'
+            });
+        }
+
+        const filters = {
+            status: status as string,
+            search: search as string,
+        };
+
+        const members = await gymService.getGymMembers(gymId, filters);
+        res.status(200).json({
+            success: true,
+            data: members,
+            count: members.length
+        });
+    } catch (error: any) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
+export const getGymTrainers = async (req: Request, res: Response) => {
+    try {
+        const { gymId } = req.params;
+        const { status, search } = req.query;
+
+        if (!gymId) {
+            return res.status(400).json({
+                success: false,
+                message: 'Gym ID is required'
+            });
+        }
+
+        const filters = {
+            status: status as string,
+            search: search as string,
+        };
+
+        const trainers = await gymService.getGymTrainers(gymId, filters);
+        res.status(200).json({
+            success: true,
+            data: trainers,
+            count: trainers.length
+        });
+    } catch (error: any) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
