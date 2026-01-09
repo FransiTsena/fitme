@@ -26,6 +26,10 @@ interface GymData {
     amenities: string[];
     images: string[];
     status: 'active' | 'suspended' | 'closed';
+    pricing: {
+        perDay: number;
+        perMonth: number;
+    };
 }
 
 // Sample user data
@@ -156,6 +160,10 @@ const sampleGyms: GymData[] = [
             'https://images.unsplash.com/photo-1549060279-7e168fce7090?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1770&q=80'
         ],
         status: 'active',
+        pricing: {
+            perDay: 300,
+            perMonth: 2500
+        },
     },
     {
         ownerId: null, // Will be set later
@@ -183,6 +191,10 @@ const sampleGyms: GymData[] = [
             'https://images.unsplash.com/photo-1549060279-7e168fce7090?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1770&q=80'
         ],
         status: 'active',
+        pricing: {
+            perDay: 250,
+            perMonth: 2000
+        },
     },
     {
         ownerId: null, // Will be set later
@@ -210,6 +222,10 @@ const sampleGyms: GymData[] = [
             'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1770&q=80'
         ],
         status: 'active',
+        pricing: {
+            perDay: 350,
+            perMonth: 3000
+        },
     },
     {
         ownerId: null, // Will be set later
@@ -237,6 +253,10 @@ const sampleGyms: GymData[] = [
             'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1740&q=80'
         ],
         status: 'active',
+        pricing: {
+            perDay: 400,
+            perMonth: 3500
+        },
     },
     {
         ownerId: null, // Will be set later
@@ -264,6 +284,10 @@ const sampleGyms: GymData[] = [
             'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1770&q=80'
         ],
         status: 'suspended',
+        pricing: {
+            perDay: 200,
+            perMonth: 1800
+        },
     },
     {
         ownerId: null, // Will be set later
@@ -291,6 +315,10 @@ const sampleGyms: GymData[] = [
             'https://images.unsplash.com/photo-1549060279-7e168fce7090?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1770&q=80'
         ],
         status: 'active',
+        pricing: {
+            perDay: 250,
+            perMonth: 2200
+        },
     },
     {
         ownerId: null, // Will be set later
@@ -318,6 +346,10 @@ const sampleGyms: GymData[] = [
             'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1770&q=80'
         ],
         status: 'active',
+        pricing: {
+            perDay: 300,
+            perMonth: 2800
+        },
     },
     {
         ownerId: null, // Will be set later
@@ -345,6 +377,10 @@ const sampleGyms: GymData[] = [
             'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1740&q=80'
         ],
         status: 'active',
+        pricing: {
+            perDay: 350,
+            perMonth: 3200
+        },
     },
     {
         ownerId: null, // Will be set later
@@ -372,6 +408,10 @@ const sampleGyms: GymData[] = [
             'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1770&q=80'
         ],
         status: 'active',
+        pricing: {
+            perDay: 250,
+            perMonth: 2000
+        },
     },
     {
         ownerId: null, // Will be set later
@@ -399,6 +439,10 @@ const sampleGyms: GymData[] = [
             'https://images.unsplash.com/photo-1549060279-7e168fce7090?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1770&q=80'
         ],
         status: 'active',
+        pricing: {
+            perDay: 220,
+            perMonth: 1900
+        },
     }
 ];
 
@@ -470,7 +514,7 @@ const seedGyms = async () => {
         const gymsToInsert = sampleGyms.map((gym, index) => {
             // Find the owner user based on email
             const ownerUser = allUsers.find(user => user.email === gym.ownerEmail);
-            const ownerId = ownerUser ? ownerUser._id : allUsers[index % allUsers.length]?._id || allUsers[0]._id;
+            const ownerId = ownerUser ? ownerUser._id : allUsers[index % allUsers.length]?.['_id'] || allUsers[0]['_id'];
 
             return {
                 ...gym,
@@ -488,6 +532,7 @@ const seedGyms = async () => {
                 photos: gym.images, // Map images to photos
                 verificationStatus: gym.status === 'suspended' ? 'rejected' : 'approved', // Map status
                 isActive: gym.status === 'active', // Map to isActive
+                pricing: gym.pricing, // Add pricing information
                 rating: { average: 0, count: 0 }, // Add required rating field
                 createdAt: new Date(),
                 updatedAt: new Date()

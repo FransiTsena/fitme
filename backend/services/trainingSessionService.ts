@@ -6,7 +6,7 @@ export const trainingSessionService = {
     /**
      * Create a new training session offering
      */
-    createSession: async (data: { 
+    createSession: async (data: {
         trainerId: string;
         title: string;
         description?: string;
@@ -18,7 +18,7 @@ export const trainingSessionService = {
         if (!trainer) {
             throw new Error("Trainer profile not found");
         }
-        
+
         if (!trainer.isActive) {
             throw new Error("Trainer account is not active");
         }
@@ -46,7 +46,7 @@ export const trainingSessionService = {
      * Get sessions by gym (Public View)
      */
     getSessionsByGym: async (gymId: string) => {
-        return await TrainingSession.find({ gymId, isActive: true }).populate("trainerId", "specialization rating"); 
+        return await TrainingSession.find({ gymId, isActive: true }).populate("trainerId", "specialization rating");
         // Note: We might need to populate 'trainerId' which refers to Trainer model, 
         // which then refers to User model for name.
     },
@@ -57,7 +57,7 @@ export const trainingSessionService = {
     updateSession: async (sessionId: string, updates: Partial<ITrainingSession>) => {
         const allowedUpdates = ["title", "description", "durationMinutes", "price"];
         const updateData: any = {};
-        
+
         Object.keys(updates).forEach(key => {
             if (allowedUpdates.includes(key)) {
                 updateData[key] = (updates as any)[key];
@@ -90,6 +90,16 @@ export const trainingSessionService = {
             throw new Error("Session not found");
         }
         return updatedSession;
+    },
+
+    /**
+     * Get a session by ID
+     */
+    getSessionById: async (sessionId: string) => {
+        const session = await TrainingSession.findById(sessionId).populate("trainerId", "specialization rating");
+        if (!session) {
+            throw new Error("Session not found");
+        }
+        return session;
     }
 };
-

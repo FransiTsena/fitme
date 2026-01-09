@@ -34,7 +34,7 @@ export default function GymDetailsScreen() {
 
                 if (response.ok) {
                     const data = await response.json();
-                    setGym(data.gym || data);
+                    setGym(data.gym || data.data || data);
                 } else {
                     console.error('Failed to fetch gym:', response.status, response.statusText);
                     Alert.alert('Error', 'Failed to load gym details');
@@ -150,6 +150,21 @@ export default function GymDetailsScreen() {
                     </View>
                 </View>
 
+                {/* Pricing */}
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>Pricing</Text>
+                    <View style={styles.pricingContainer}>
+                        <View style={styles.pricingItem}>
+                            <Text style={styles.pricingLabel}>Per Day:</Text>
+                            <Text style={styles.pricingValue}>{gym.pricing?.perDay ? `${gym.pricing.perDay} birr` : 'N/A'}</Text>
+                        </View>
+                        <View style={styles.pricingItem}>
+                            <Text style={styles.pricingLabel}>Per Month:</Text>
+                            <Text style={styles.pricingValue}>{gym.pricing?.perMonth ? `${gym.pricing.perMonth} birr` : 'N/A'}</Text>
+                        </View>
+                    </View>
+                </View>
+
                 {/* Description */}
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>About</Text>
@@ -187,6 +202,10 @@ export default function GymDetailsScreen() {
 
                 {/* Action Buttons */}
                 <View style={styles.actionContainer}>
+                    <TouchableOpacity style={styles.actionButton} onPress={() => router.push(`/member/gym-plans?gymId=${gym._id}`)}>
+                        <Ionicons name="card" size={20} color="#000" />
+                        <Text style={styles.actionButtonText}>Subscribe</Text>
+                    </TouchableOpacity>
                     <TouchableOpacity style={styles.actionButton}>
                         <Ionicons name="navigate-outline" size={20} color="#000" />
                         <Text style={styles.actionButtonText}>Directions</Text>
@@ -194,10 +213,6 @@ export default function GymDetailsScreen() {
                     <TouchableOpacity style={styles.actionButton}>
                         <Ionicons name="call-outline" size={20} color="#000" />
                         <Text style={styles.actionButtonText}>Call</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.actionButton}>
-                        <Ionicons name="book-outline" size={20} color="#000" />
-                        <Text style={styles.actionButtonText}>Book Session</Text>
                     </TouchableOpacity>
                 </View>
             </ScrollView>
@@ -316,6 +331,27 @@ const styles = StyleSheet.create({
         color: '#888',
         fontStyle: 'italic',
         paddingVertical: 10,
+    },
+    pricingContainer: {
+        gap: 10,
+    },
+    pricingItem: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingVertical: 8,
+        paddingHorizontal: 10,
+        backgroundColor: '#222',
+        borderRadius: 8,
+    },
+    pricingLabel: {
+        color: '#aaa',
+        fontSize: 16,
+    },
+    pricingValue: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: 'bold',
     },
     hourRow: {
         flexDirection: 'row',

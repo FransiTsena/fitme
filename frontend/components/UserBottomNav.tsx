@@ -35,8 +35,8 @@ export function UserBottomNav() {
             </TouchableOpacity>
 
             {/* Schedule / Calendar */}
-            <TouchableOpacity onPress={() => console.log("Nav to Schedule")}>
-                <Ionicons name="calendar-outline" size={28} color="#666" />
+            <TouchableOpacity onPress={() => router.push("/member/schedules")}>
+                <Ionicons name={isActive("/member/schedules") ? "calendar" : "calendar-outline"} size={28} color={isActive("/member/schedules") ? "#ff8c2b" : "#666"} />
             </TouchableOpacity>
 
             {/* Profile */}

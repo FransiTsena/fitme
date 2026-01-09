@@ -21,19 +21,19 @@ export default function TabTwoScreen() {
   const [useLocation, setUseLocation] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [sortBy, setSortBy] = useState('distance'); // 'distance', 'rating', 'name'
-  
+
   // Fetch gyms from API
   useEffect(() => {
     const fetchGyms = async () => {
       try {
         let response;
-        
+
         if (useLocation) {
           // For now, we'll use dummy coordinates for testing nearby functionality
           // In a real app, we would get the user's actual location
           const dummyLat = 9.018336;
           const dummyLng = 38.74687;
-          
+
           response = await fetch(`${process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000'}/gyms/nearby?latitude=${dummyLat}&longitude=${dummyLng}&maxDistance=10`, {
             headers: {
               'Authorization': `Bearer ${user?.token}`,
@@ -48,7 +48,7 @@ export default function TabTwoScreen() {
             },
           });
         }
-        
+
         if (response.ok) {
           const data = await response.json();
           const gymData = data.data || data.gyms || [];
@@ -67,24 +67,24 @@ export default function TabTwoScreen() {
         setLoading(false);
       }
     };
-    
+
     fetchGyms();
   }, [user?.token, useLocation]);
-  
+
   // Apply search and filters
   useEffect(() => {
     let result = [...gyms];
-    
+
     // Apply search filter
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      result = result.filter(gym => 
+      result = result.filter(gym =>
         (gym.name && gym.name.toLowerCase().includes(query)) ||
         (gym.address && gym.address.city && gym.address.city.toLowerCase().includes(query)) ||
         (gym.address && gym.address.area && gym.address.area.toLowerCase().includes(query))
       );
     }
-    
+
     // Apply sorting
     if (sortBy === 'rating') {
       result.sort((a, b) => (b.rating?.average || 0) - (a.rating?.average || 0));
@@ -94,18 +94,18 @@ export default function TabTwoScreen() {
       // For now, we'll sort by name since we don't have exact distance data
       result.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
     }
-    
+
     setFilteredGyms(result);
   }, [searchQuery, sortBy, gyms]);
-  
+
   const toggleLocationFilter = () => {
     setUseLocation(!useLocation);
   };
-  
+
   const handleGymPress = (gymId: string) => {
-    router.push({pathname: '/member/gym-details', params: {id: gymId}});
+    router.push({ pathname: '/member/gym-details', params: { id: gymId } });
   };
-  
+
   return (
     <ProtectedRoute>
       <View style={{ flex: 1, backgroundColor: '#000' }}>
@@ -135,24 +135,12 @@ export default function TabTwoScreen() {
         <ScrollView
           style={{ flex: 1 }}
           contentContainerStyle={styles.scrollContent}
-          stickyHeaderIndices={[1]}
+          stickyHeaderIndices={[0]}
           snapToOffsets={[0, 250]}
           snapToEnd={false}
           decelerationRate="fast"
         >
-          {/* Map Header (index 0) */}
-          <View style={styles.mapContainer}>
-            <Image
-              source={require('@/assets/images/map-header.png')}
-              style={{ width: '100%', height: 250 }}
-              resizeMode="cover"
-            />
-            <TouchableOpacity style={styles.mapOverlayBtn}>
-              <Text style={styles.nearMeText}>Near Me</Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* Sticky Header Container (index 1) */}
+          {/* Sticky Header Container (index 0) */}
           <View style={{ backgroundColor: '#000', paddingBottom: 10, zIndex: 1000, elevation: 50 }}>
             {/* Search Bar */}
             <View style={styles.searchBarContainer}>
@@ -183,16 +171,11 @@ export default function TabTwoScreen() {
             </View>
           </View>
 
-          {/* Content (index 2) */}
+          {/* Content (index 1) */}
           <View style={styles.contentContainer}>
-            {/* Near Me Button - Positioned normally now to avoid overlap */}
-            <View style={styles.nearMeContainer}>
-              <TouchableOpacity style={[styles.nearMeBtnList, useLocation && styles.activeNearMeBtn]} onPress={toggleLocationFilter}>
-                <Text style={styles.nearMeText}>Near Me {useLocation ? 'ON' : 'OFF'}</Text>
-              </TouchableOpacity>
-            </View>
 
-            <AdCarousel />
+
+            {searchQuery === '' && <AdCarousel />}
 
             <ThemedText type="subtitle" style={{ marginBottom: 10 }}>Featured Gyms</ThemedText>
 
@@ -206,7 +189,7 @@ export default function TabTwoScreen() {
                     rating={gym.rating?.average || 0}
                     reviews={gym.rating?.count || 0}
                     distance="N/A"  // Actual distance calculation would require user location
-                    price={gym.price ? `${gym.price} birr` : "N/A"}
+                    price={gym.pricing?.perMonth ? `${gym.pricing.perMonth} birr` : "N/A"}
                   />
                 </TouchableOpacity>
               ))
@@ -236,11 +219,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: 80, // Space for bottom nav
   },
-  mapContainer: {
-    width: '100%',
-    height: 250,
-    backgroundColor: '#e6e6e6',
-  },
+
   searchBarContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -298,20 +277,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     marginTop: 20,
   },
-  mapOverlayBtn: {
-    position: 'absolute',
-    bottom: 20,
-    alignSelf: 'center',
-    backgroundColor: '#ff8c2b',
-    paddingHorizontal: 30,
-    paddingVertical: 10,
-    borderRadius: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 5,
-  },
+
 
   nearMeBtnList: {
     backgroundColor: '#ff8c2b',
