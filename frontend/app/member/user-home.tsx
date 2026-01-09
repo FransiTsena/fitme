@@ -345,52 +345,8 @@ export default function UserHomeScreen() {
                 {/* Ad Banner */}
                 <AdCarousel />
 
-                {/* Quick Actions */}
-                <Text style={styles.sectionTitle}>Quick Actions</Text>
-                <View style={styles.quickActionsRow}>
-                    <TouchableOpacity 
-                        style={styles.quickActionCard}
-                        onPress={() => router.push("/member/my-subscriptions")}
-                    >
-                        <View style={[styles.quickActionIcon, { backgroundColor: '#ff8c2b20' }]}>
-                            <Ionicons name="card" size={24} color="#ff8c2b" />
-                        </View>
-                        <Text style={styles.quickActionText}>My Subs</Text>
-                    </TouchableOpacity>
-                    
-                    <TouchableOpacity 
-                        style={styles.quickActionCard}
-                        onPress={() => router.push("/member/my-bookings")}
-                    >
-                        <View style={[styles.quickActionIcon, { backgroundColor: '#00cc4420' }]}>
-                            <Ionicons name="calendar" size={24} color="#00cc44" />
-                        </View>
-                        <Text style={styles.quickActionText}>Bookings</Text>
-                    </TouchableOpacity>
-                    
-                    <TouchableOpacity 
-                        style={styles.quickActionCard}
-                        onPress={() => router.push("/member/schedules")}
-                    >
-                        <View style={[styles.quickActionIcon, { backgroundColor: '#4488ff20' }]}>
-                            <Ionicons name="barbell" size={24} color="#4488ff" />
-                        </View>
-                        <Text style={styles.quickActionText}>Sessions</Text>
-                    </TouchableOpacity>
-                    
-                    <TouchableOpacity 
-                        style={styles.quickActionCard}
-                        onPress={() => router.push("/member/gym-selection")}
-                    >
-                        <View style={[styles.quickActionIcon, { backgroundColor: '#aa44ff20' }]}>
-                            <Ionicons name="fitness" size={24} color="#aa44ff" />
-                        </View>
-                        <Text style={styles.quickActionText}>Find Gym</Text>
-                    </TouchableOpacity>
-                </View>
-
                 {/* Stats Section */}
-                <Text style={styles.sectionTitle}>Your Stats</Text>
+                <Text style={styles.sectionTitle}>Quick Actions</Text>
                 <View style={styles.statsGrid}>
                     <View style={styles.statCard}>
                         <View style={styles.statHeader}>
@@ -446,7 +402,7 @@ export default function UserHomeScreen() {
                 </View>
 
                 {/* Calendar Section */}
-                <Text style={styles.sectionTitle}>Your Calendar</Text>
+                <Text style={styles.sectionTitle}>Quick Actions</Text>
                 <CustomCalendar />
 
                 {/* Today's Workout */}
@@ -921,27 +877,5 @@ const styles = StyleSheet.create({
         color: '#ff8c2b',
         fontSize: 14,
         fontWeight: 'bold',
-    },
-    quickActionsRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginBottom: 24,
-    },
-    quickActionCard: {
-        alignItems: 'center',
-        flex: 1,
-    },
-    quickActionIcon: {
-        width: 56,
-        height: 56,
-        borderRadius: 16,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: 8,
-    },
-    quickActionText: {
-        color: '#fff',
-        fontSize: 12,
-        fontWeight: '500',
     },
 });

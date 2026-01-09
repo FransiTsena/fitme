@@ -315,7 +315,7 @@ export default function ScheduleScreen() {
 
             {/* Bottom Nav */}
             <View style={styles.bottomNav}>
-                <TouchableOpacity style={styles.navItem} onPress={() => router.push("/trainer/home")}>
+                <TouchableOpacity style={styles.navItem} onPress={() => router.push("/trainer/trainer-home")}>
                     <Ionicons name="home-outline" size={24} color="#666" />
                     <Text style={styles.navText}>Home</Text>
                 </TouchableOpacity>

@@ -1,13 +1,21 @@
 import { Logo } from '@/components/Logo';
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, router } from 'expo-router';
-import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { FlatList, StyleSheet, Text, TouchableOpacity, View, Platform } from 'react-native';
 
 import { UserBottomNav } from '@/components/UserBottomNav';
 import { ThemedText } from '@/components/themed-text';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { useAuth } from '@/context/AuthContext';
 import React, { useEffect, useState } from 'react';
+
+// Platform-aware API URL
+const DEFAULT_API_BASE_URL = Platform.select({
+    android: 'http://10.0.2.2:3005/api',
+    ios: 'http://127.0.0.1:3005/api',
+    default: 'http://127.0.0.1:3005/api',
+});
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || DEFAULT_API_BASE_URL;
 
 export default function SchedulesScreen() {
     const { user } = useAuth();
@@ -20,7 +28,7 @@ export default function SchedulesScreen() {
         const fetchUserData = async () => {
             try {
                 // First, get user's active memberships
-                const membershipsResponse = await fetch(`${process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000'}/subscription/my`, {
+                const membershipsResponse = await fetch(`${API_BASE_URL}/subscriptions/my`, {
                     headers: {
                         'Authorization': `Bearer ${user?.token}`,
                         'Content-Type': 'application/json',
@@ -40,7 +48,7 @@ export default function SchedulesScreen() {
 
                         // For simplicity, fetch sessions from the first gym the user is subscribed to
                         if (gymIds.length > 0) {
-                            const sessionsResponse = await fetch(`${process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000'}/training-sessions/gym/${gymIds[0]}`, {
+                            const sessionsResponse = await fetch(`${API_BASE_URL}/training-sessions/gym/${gymIds[0]}`, {
                                 headers: {
                                     'Authorization': `Bearer ${user?.token}`,
                                     'Content-Type': 'application/json',

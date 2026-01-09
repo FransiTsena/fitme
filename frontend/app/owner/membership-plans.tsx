@@ -73,7 +73,7 @@ export default function MembershipPlansScreen() {
         if (!gym?._id) return;
         
         try {
-            const response = await fetch(`${API_BASE_URL}/membership/gym/${gym._id}`, {
+            const response = await fetch(`${API_BASE_URL}/memberships/gym/${gym._id}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -131,8 +131,8 @@ export default function MembershipPlansScreen() {
 
         try {
             const url = editingPlan
-                ? `${API_BASE_URL}/membership/${editingPlan._id}`
-                : `${API_BASE_URL}/membership`;
+                ? `${API_BASE_URL}/memberships/${editingPlan._id}`
+                : `${API_BASE_URL}/memberships`;
 
             const body = editingPlan
                 ? {
@@ -177,7 +177,7 @@ export default function MembershipPlansScreen() {
 
     const togglePlanStatus = async (plan: MembershipPlan) => {
         try {
-            const response = await fetch(`${API_BASE_URL}/membership/${plan._id}/status`, {
+            const response = await fetch(`${API_BASE_URL}/memberships/${plan._id}/status`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
@@ -468,7 +468,7 @@ export default function MembershipPlansScreen() {
 
             {/* Bottom Nav */}
             <View style={styles.bottomNav}>
-                <TouchableOpacity onPress={() => router.push("/owner/home")}>
+                <TouchableOpacity onPress={() => router.push("/owner/owner-home")}>
                     <Ionicons name="home-outline" size={24} color="#666" />
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => router.push("/owner/members-list-owner")}>

@@ -266,7 +266,7 @@ export default function TrainersListOwnerScreen() {
 
             {/* Bottom Nav */}
             <View style={styles.bottomNav}>
-                <TouchableOpacity onPress={() => router.push("/owner/home")}>
+                <TouchableOpacity onPress={() => router.push("/owner/owner-home")}>
                     <Ionicons name="home-outline" size={24} color="#666" />
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => router.push("/owner/members-list-owner")}>

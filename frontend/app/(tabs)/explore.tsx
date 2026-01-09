@@ -1,7 +1,7 @@
 import { Logo } from '@/components/Logo';
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, router } from 'expo-router';
-import { Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, Platform } from 'react-native';
 
 import { AdCarousel } from '@/components/AdCarousel';
 import { GymCard } from '@/components/GymCard';
@@ -10,6 +10,14 @@ import { ThemedText } from '@/components/themed-text';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { useAuth } from '@/context/AuthContext';
 import React, { useEffect, useState } from 'react';
+
+// Platform-aware API URL
+const DEFAULT_API_BASE_URL = Platform.select({
+    android: 'http://10.0.2.2:3005/api',
+    ios: 'http://127.0.0.1:3005/api',
+    default: 'http://127.0.0.1:3005/api',
+});
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || DEFAULT_API_BASE_URL;
 
 
 export default function TabTwoScreen() {
@@ -34,14 +42,14 @@ export default function TabTwoScreen() {
           const dummyLat = 9.018336;
           const dummyLng = 38.74687;
 
-          response = await fetch(`${process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000'}/gyms/nearby?latitude=${dummyLat}&longitude=${dummyLng}&maxDistance=10`, {
+          response = await fetch(`${API_BASE_URL}/gyms/nearby?latitude=${dummyLat}&longitude=${dummyLng}&maxDistance=10`, {
             headers: {
               'Authorization': `Bearer ${user?.token}`,
               'Content-Type': 'application/json',
             },
           });
         } else {
-          response = await fetch(`${process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000'}/gyms`, {
+          response = await fetch(`${API_BASE_URL}/gyms`, {
             headers: {
               'Authorization': `Bearer ${user?.token}`,
               'Content-Type': 'application/json',

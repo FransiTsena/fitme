@@ -65,8 +65,8 @@ export const subscriptionService = {
      */
     getUserMemberships: async (userId: string) => {
         return await UserMembership.find({ userId })
-            .populate("gymId", "name location")
-            .populate("planId", "title")
+            .populate("gymId", "name address location")
+            .populate("planId", "title price durationInDays description")
             .sort({ createdAt: -1 });
     }
 };

@@ -74,8 +74,9 @@ export const sessionBookingService = {
      */
     getMemberBookings: async (memberId: string) => {
         return await SessionBooking.find({ memberId })
-            .populate("sessionId", "title durationMinutes price")
-            .populate("trainerId", "specialization") // Need to populate user from trainer if we want name
+            .populate("sessionId", "title description durationMinutes price")
+            .populate("gymId", "name address")
+            .populate("trainerId", "specialization userId") 
             .sort({ scheduledDate: -1 });
     },
 
