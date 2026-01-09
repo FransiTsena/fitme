@@ -2,8 +2,10 @@ import { Logo } from "@/components/Logo";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { Stack, router } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
+    ActivityIndicator,
+    Alert,
     Dimensions,
     KeyboardAvoidingView,
     Platform,
@@ -15,32 +17,115 @@ import {
     View
 } from "react-native";
 import { BarChart, LineChart } from "react-native-gifted-charts";
+import { useAuth } from "@/context/AuthContext";
+import useOwnerStore from "@/store/ownerStore";
 
 const screenWidth = Dimensions.get("window").width;
 
 export default function OwnerProfileScreen() {
     const [activeTab, setActiveTab] = useState("Profile");
+    const { user, token } = useAuth();
+    const { gym, analytics, loading, analyticsLoading, error, fetchGym, fetchAnalytics, updateGym, clearError } = useOwnerStore();
 
-    // Charts Data
-    const revenueData = [
-        { value: 850000, label: 'Jul' },
-        { value: 920000, label: 'Aug' },
-        { value: 1080000, label: 'Sep' },
-        { value: 1120000, label: 'Oct' },
-        { value: 1180000, label: 'Nov' },
-        { value: 1250000, label: 'Dec' },
+    // Form state for editing
+    const [formData, setFormData] = useState({
+        name: '',
+        email: '',
+        phone: '',
+        address: '',
+        area: '',
+        description: '',
+    });
+
+    // Fetch gym data on mount
+    useEffect(() => {
+        if (user?.id && token) {
+            fetchGym(user.id, token);
+        }
+    }, [user?.id, token]);
+
+    // Fetch analytics when gym is loaded
+    useEffect(() => {
+        if (gym?._id && token) {
+            fetchAnalytics(gym._id, token);
+        }
+    }, [gym?._id, token]);
+
+    // Update form when gym data loads
+    useEffect(() => {
+        if (gym) {
+            setFormData({
+                name: gym.name || '',
+                email: user?.email || '',
+                phone: user?.phone || '',
+                address: gym.address?.street || '',
+                area: gym.address?.area || '',
+                description: gym.description || '',
+            });
+        }
+    }, [gym, user]);
+
+    // Handle errors
+    useEffect(() => {
+        if (error) {
+            Alert.alert('Error', error, [{ text: 'OK', onPress: clearError }]);
+        }
+    }, [error]);
+
+    // Save changes handler
+    const handleSaveChanges = async () => {
+        if (!gym?._id || !token) return;
+
+        const updateData = {
+            name: formData.name,
+            description: formData.description,
+            address: {
+                city: gym.address?.city || '',
+                area: formData.area,
+                street: formData.address,
+            },
+        };
+
+        const result = await updateGym(gym._id, updateData, token);
+        if (result.success) {
+            Alert.alert('Success', 'Profile updated successfully');
+        }
+    };
+
+    // Chart data from analytics or defaults
+    const revenueData = analytics?.revenue?.monthly || [
+        { value: 0, label: 'Jul' },
+        { value: 0, label: 'Aug' },
+        { value: 0, label: 'Sep' },
+        { value: 0, label: 'Oct' },
+        { value: 0, label: 'Nov' },
+        { value: 0, label: 'Dec' },
     ];
 
-    const peakHoursData = [
-        { value: 85, label: '6 AM' },
-        { value: 120, label: '8 AM' },
-        { value: 95, label: '10 PM' },
-        { value: 75, label: '12 PM' },
-        { value: 60, label: '2 PM' },
-        { value: 140, label: '4 PM' },
-        { value: 165, label: '6 PM' }, // Peak
-        { value: 110, label: '8 PM' },
+    const peakHoursData = analytics?.insights?.peakHours?.length ? analytics.insights.peakHours : [
+        { value: 0, label: 'Mon' },
+        { value: 0, label: 'Tue' },
+        { value: 0, label: 'Wed' },
+        { value: 0, label: 'Thu' },
+        { value: 0, label: 'Fri' },
+        { value: 0, label: 'Sat' },
+        { value: 0, label: 'Sun' },
     ];
+
+    // Format member since date
+    const memberSince = gym?.createdAt 
+        ? new Date(gym.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+        : 'N/A';
+
+    // Membership distribution from analytics
+    const membershipDistribution = analytics?.membershipDistribution || [
+        { type: 'Basic', count: 0, percentage: 0 },
+        { type: 'Premium', count: 0, percentage: 0 },
+        { type: 'VIP', count: 0, percentage: 0 },
+    ];
+
+    // Top trainers from analytics
+    const topTrainers = analytics?.trainers?.topBooked || [];
 
     return (
         <KeyboardAvoidingView
@@ -82,6 +167,13 @@ export default function OwnerProfileScreen() {
 
             <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
 
+                {loading ? (
+                    <View style={styles.loadingContainer}>
+                        <ActivityIndicator size="large" color="#ff8c2b" />
+                        <Text style={styles.loadingText}>Loading profile...</Text>
+                    </View>
+                ) : (
+                <>
                 {/* Profile Header */}
                 <View style={styles.profileHeaderCard}>
                     <View style={styles.avatarRow}>
@@ -94,10 +186,12 @@ export default function OwnerProfileScreen() {
                             </View>
                         </View>
                         <View style={{ flex: 1 }}>
-                            <Text style={styles.gymNameLarge}>Bole Fitness Center</Text>
-                            <Text style={styles.memberSince}>Member since January 2024</Text>
-                            <View style={styles.activeBadge}>
-                                <Text style={styles.activeText}>Active</Text>
+                            <Text style={styles.gymNameLarge}>{gym?.name || 'Your Gym'}</Text>
+                            <Text style={styles.memberSince}>Member since {memberSince}</Text>
+                            <View style={[styles.activeBadge, !gym?.isActive && styles.inactiveBadge]}>
+                                <Text style={[styles.activeText, !gym?.isActive && styles.inactiveText]}>
+                                    {gym?.isActive ? 'Active' : gym?.verificationStatus || 'Pending'}
+                                </Text>
                             </View>
                         </View>
                     </View>
@@ -105,21 +199,40 @@ export default function OwnerProfileScreen() {
                     {/* Form Fields */}
                     <View style={styles.formSection}>
                         <Text style={styles.label}>Gym Name</Text>
-                        <TextInput style={styles.input} value="Bole Fitness Center" />
+                        <TextInput 
+                            style={styles.input} 
+                            value={formData.name}
+                            onChangeText={(text) => setFormData(prev => ({ ...prev, name: text }))}
+                            placeholder="Enter gym name"
+                            placeholderTextColor="#666"
+                        />
 
                         <View style={styles.row}>
                             <View style={{ flex: 1, marginRight: 8 }}>
                                 <Text style={styles.label}>Email</Text>
                                 <View style={styles.inputWithIcon}>
                                     <Ionicons name="mail-outline" size={16} color="#888" />
-                                    <TextInput style={styles.inputInner} value="abebe@example.com" />
+                                    <TextInput 
+                                        style={styles.inputInner} 
+                                        value={formData.email}
+                                        onChangeText={(text) => setFormData(prev => ({ ...prev, email: text }))}
+                                        editable={false}
+                                        placeholder="Email"
+                                        placeholderTextColor="#666"
+                                    />
                                 </View>
                             </View>
                             <View style={{ flex: 1, marginLeft: 8 }}>
                                 <Text style={styles.label}>Phone number</Text>
                                 <View style={styles.inputWithIcon}>
                                     <Ionicons name="call-outline" size={16} color="#888" />
-                                    <TextInput style={styles.inputInner} value="+251912345678" />
+                                    <TextInput 
+                                        style={styles.inputInner} 
+                                        value={formData.phone}
+                                        onChangeText={(text) => setFormData(prev => ({ ...prev, phone: text }))}
+                                        placeholder="Phone"
+                                        placeholderTextColor="#666"
+                                    />
                                 </View>
                             </View>
                         </View>
@@ -127,12 +240,20 @@ export default function OwnerProfileScreen() {
                         <Text style={styles.label}>Address</Text>
                         <View style={styles.inputWithIcon}>
                             <Ionicons name="location-outline" size={16} color="#888" />
-                            <TextInput style={styles.inputInner} value="Bole Road, near Edna Mall" />
+                            <TextInput 
+                                style={styles.inputInner} 
+                                value={formData.address}
+                                onChangeText={(text) => setFormData(prev => ({ ...prev, address: text }))}
+                                placeholder="Street address"
+                                placeholderTextColor="#666"
+                            />
                         </View>
 
                         <Text style={styles.label}>Sub-City</Text>
                         <TouchableOpacity style={styles.dropdown}>
-                            <Text style={{ color: '#fff' }}>Bole</Text>
+                            <Text style={{ color: formData.area ? '#fff' : '#666' }}>
+                                {formData.area || 'Select sub-city'}
+                            </Text>
                             <Ionicons name="caret-down-outline" size={16} color="#888" />
                         </TouchableOpacity>
 
@@ -140,18 +261,25 @@ export default function OwnerProfileScreen() {
                         <TextInput
                             style={[styles.input, styles.textArea]}
                             multiline
-                            value="Premier fitness center in Addis Ababa with state-of-the-art equipment and expert trainers."
+                            value={formData.description}
+                            onChangeText={(text) => setFormData(prev => ({ ...prev, description: text }))}
+                            placeholder="Describe your gym..."
+                            placeholderTextColor="#666"
                         />
                     </View>
 
-                    <TouchableOpacity>
+                    <TouchableOpacity onPress={handleSaveChanges} disabled={loading}>
                         <LinearGradient
                             colors={['#ff8c2b', '#ff5500']}
                             start={{ x: 0, y: 0 }}
                             end={{ x: 1, y: 0 }}
-                            style={styles.saveBtn}
+                            style={[styles.saveBtn, loading && styles.saveBtnDisabled]}
                         >
-                            <Text style={styles.saveBtnText}>Save Changes</Text>
+                            {loading ? (
+                                <ActivityIndicator size="small" color="#fff" />
+                            ) : (
+                                <Text style={styles.saveBtnText}>Save Changes</Text>
+                            )}
                         </LinearGradient>
                     </TouchableOpacity>
                 </View>
@@ -161,6 +289,7 @@ export default function OwnerProfileScreen() {
                     <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
                         <Ionicons name="stats-chart" size={18} color="#ff8c2b" style={{ marginRight: 8 }} />
                         <Text style={styles.sectionTitle}>Business Analytics</Text>
+                        {analyticsLoading && <ActivityIndicator size="small" color="#ff8c2b" style={{ marginLeft: 10 }} />}
                     </View>
 
                     <View style={styles.analyticsRow}>
@@ -169,7 +298,9 @@ export default function OwnerProfileScreen() {
                                 <View style={styles.analyticsIconBg}><Ionicons name="trending-up" size={18} color="#00cc44" /></View>
                                 <View>
                                     <Text style={styles.analyticsLabel}>Revenue Growth</Text>
-                                    <Text style={styles.analyticsValue_Green}>+41%</Text>
+                                    <Text style={styles.analyticsValue_Green}>
+                                        {analytics?.revenue?.growth !== undefined ? `${analytics.revenue.growth > 0 ? '+' : ''}${analytics.revenue.growth}%` : '--'}
+                                    </Text>
                                 </View>
                             </View>
                             <Text style={styles.analyticsSub}>Last 6 months</Text>
@@ -180,7 +311,9 @@ export default function OwnerProfileScreen() {
                                 <View style={[styles.analyticsIconBg, { backgroundColor: '#332211' }]}><Ionicons name="people" size={18} color="#ff8c2b" /></View>
                                 <View>
                                     <Text style={styles.analyticsLabel}>Retention Rate</Text>
-                                    <Text style={styles.analyticsValue_Green}>94%</Text>
+                                    <Text style={styles.analyticsValue_Green}>
+                                        {analytics?.insights?.retentionRate !== undefined ? `${analytics.insights.retentionRate}%` : '--'}
+                                    </Text>
                                 </View>
                             </View>
                             <Text style={styles.analyticsSub}>Member retention</Text>
@@ -243,64 +376,70 @@ export default function OwnerProfileScreen() {
                 {/* Membership Distribution */}
                 <View style={styles.sectionContainer}>
                     <Text style={styles.sectionTitle}>Membership Distribution</Text>
-                    <View style={styles.distRow}>
-                        <View>
-                            <Text style={styles.distLabel}>Basic</Text>
-                            <View style={styles.progressBarBg}>
-                                <View style={[styles.progressBarFill, { width: '40%', backgroundColor: '#888' }]} />
+                    {membershipDistribution.map((membership, index) => (
+                        <View key={index} style={styles.distRow}>
+                            <View>
+                                <Text style={styles.distLabel}>{membership.type}</Text>
+                                <View style={styles.progressBarBg}>
+                                    <View style={[
+                                        styles.progressBarFill, 
+                                        { 
+                                            width: `${membership.percentage}%`, 
+                                            backgroundColor: index === 0 ? '#888' : index === 1 ? '#ff8c2b' : '#00cc44' 
+                                        }
+                                    ]} />
+                                </View>
                             </View>
+                            <Text style={styles.distCount}>{membership.count} members</Text>
                         </View>
-                        <Text style={styles.distCount}>180 members</Text>
-                    </View>
-                    <View style={styles.distRow}>
-                        <View>
-                            <Text style={styles.distLabel}>Premium</Text>
-                            <View style={styles.progressBarBg}>
-                                <View style={[styles.progressBarFill, { width: '60%', backgroundColor: '#ff8c2b' }]} />
-                            </View>
-                        </View>
-                        <Text style={styles.distCount}>130 members</Text>
-                    </View>
-                    <View style={styles.distRow}>
-                        <View>
-                            <Text style={styles.distLabel}>VIP</Text>
-                            <View style={styles.progressBarBg}>
-                                <View style={[styles.progressBarFill, { width: '25%', backgroundColor: '#00cc44' }]} />
-                            </View>
-                        </View>
-                        <Text style={styles.distCount}>52 members</Text>
-                    </View>
+                    ))}
                 </View>
 
                 {/* Top Trainers */}
                 <View style={styles.sectionContainer}>
                     <Text style={styles.sectionTitle}>Top Trainers</Text>
-                    {[
-                        { rank: 1, name: "Mesenbet Tadesse", clients: 52, rating: 4.9, revenue: "130,00 ETB", medalColor: "#C9B037", medalText: "#5D4037" },
-                        { rank: 2, name: "Mesenbet Tadesse", clients: 52, rating: 4.9, revenue: "130,00 ETB", medalColor: "#B4B4B4", medalText: "#333" },
-                        { rank: 3, name: "Mesenbet Tadesse", clients: 52, rating: 4.9, revenue: "130,00 ETB", medalColor: "#AD8A56", medalText: "#3E2723" },
-                        { rank: 4, name: "Mesenbet Tadesse", clients: 52, rating: 4.9, revenue: "130,00 ETB", medalColor: "#332211", medalText: "#ff8c2b" },
-                    ].map((trainer, i) => (
-                        <View key={i} style={styles.rankingCard}>
-                            <View style={[styles.rankBadge, { backgroundColor: trainer.medalColor }]}>
-                                <Text style={[styles.rankText, { color: trainer.medalText }]}>#{trainer.rank}</Text>
-                            </View>
-                            <View style={{ flex: 1 }}>
-                                <Text style={styles.rankName}>{trainer.name}</Text>
-                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                                    <Text style={styles.rankClients}>{trainer.clients} clients</Text>
-                                    <Text style={{ color: '#666' }}>•</Text>
-                                    <Ionicons name="star" size={10} color="#ff8c2b" />
-                                    <Text style={styles.rankRating}>{trainer.rating}</Text>
+                    {topTrainers.length > 0 ? (
+                        topTrainers.slice(0, 4).map((trainer, i) => {
+                            const medalColors = [
+                                { bg: "#C9B037", text: "#5D4037" },
+                                { bg: "#B4B4B4", text: "#333" },
+                                { bg: "#AD8A56", text: "#3E2723" },
+                                { bg: "#332211", text: "#ff8c2b" },
+                            ];
+                            const medal = medalColors[i] || medalColors[3];
+                            
+                            return (
+                                <View key={trainer._id || i} style={styles.rankingCard}>
+                                    <View style={[styles.rankBadge, { backgroundColor: medal.bg }]}>
+                                        <Text style={[styles.rankText, { color: medal.text }]}>#{i + 1}</Text>
+                                    </View>
+                                    <View style={{ flex: 1 }}>
+                                        <Text style={styles.rankName}>{trainer.name}</Text>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                                            <Text style={styles.rankClients}>{trainer.count} sessions</Text>
+                                            <Text style={{ color: '#666' }}>•</Text>
+                                            <Ionicons name="star" size={10} color="#ff8c2b" />
+                                            <Text style={styles.rankRating}>{trainer.rating?.toFixed(1) || 'N/A'}</Text>
+                                        </View>
+                                    </View>
+                                    <View style={{ alignItems: 'flex-end' }}>
+                                        <Text style={styles.rankRevenueValue}>
+                                            {trainer.revenue ? `${trainer.revenue.toLocaleString()} ETB` : '--'}
+                                        </Text>
+                                        <Text style={styles.rankRevenueLabel}>Revenue</Text>
+                                    </View>
                                 </View>
-                            </View>
-                            <View style={{ alignItems: 'flex-end' }}>
-                                <Text style={styles.rankRevenueValue}>{trainer.revenue}</Text>
-                                <Text style={styles.rankRevenueLabel}>Revenue</Text>
-                            </View>
+                            );
+                        })
+                    ) : (
+                        <View style={styles.emptyState}>
+                            <Ionicons name="barbell-outline" size={40} color="#444" />
+                            <Text style={styles.emptyStateText}>No trainer data available</Text>
                         </View>
-                    ))}
+                    )}
                 </View>
+                </>
+                )}
 
                 <View style={{ height: 80 }} />
             </ScrollView>
@@ -331,6 +470,26 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: "#000",
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingVertical: 100,
+    },
+    loadingText: {
+        color: '#888',
+        marginTop: 12,
+        fontSize: 14,
+    },
+    emptyState: {
+        alignItems: 'center',
+        paddingVertical: 30,
+    },
+    emptyStateText: {
+        color: '#666',
+        marginTop: 10,
+        fontSize: 14,
     },
     tabsContainer: {
         flexDirection: 'row',
@@ -403,10 +562,16 @@ const styles = StyleSheet.create({
         borderRadius: 4,
         alignSelf: 'flex-start',
     },
+    inactiveBadge: {
+        backgroundColor: '#3a2a0f',
+    },
     activeText: {
         color: '#00cc44',
         fontSize: 10,
         fontWeight: 'bold',
+    },
+    inactiveText: {
+        color: '#ff8c2b',
     },
     formSection: {
         gap: 16,
@@ -464,6 +629,9 @@ const styles = StyleSheet.create({
         paddingVertical: 12,
         borderRadius: 10,
         alignItems: 'center',
+    },
+    saveBtnDisabled: {
+        opacity: 0.7,
     },
     saveBtnText: {
         color: '#fff',
