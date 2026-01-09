@@ -16,6 +16,21 @@ import { useAuth } from "@/context/AuthContext";
 
 const { width } = Dimensions.get('window');
 
+// Utility function to safely get nested values
+const getNestedValue = (obj: any, path: string, defaultValue: any = 'N/A') => {
+    const keys = path.split('.');
+    let current = obj;
+    
+    for (const key of keys) {
+        if (current === null || current === undefined) {
+            return defaultValue;
+        }
+        current = current[key];
+    }
+    
+    return current !== undefined && current !== null ? current : defaultValue;
+};
+
 export default function GymDetailsScreen() {
     const { id } = useLocalSearchParams<{ id: string }>();
     const { user } = useAuth();
@@ -25,7 +40,10 @@ export default function GymDetailsScreen() {
     useEffect(() => {
         const fetchGym = async () => {
             try {
-                const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000'}/gyms/${id}`, {
+                const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
+                console.log('Fetching gym from:', `${apiUrl}/gyms/${id}`);
+                
+                const response = await fetch(`${apiUrl}/gyms/${id}`, {
                     headers: {
                         'Authorization': `Bearer ${user?.token}`,
                         'Content-Type': 'application/json',
@@ -34,7 +52,15 @@ export default function GymDetailsScreen() {
 
                 if (response.ok) {
                     const data = await response.json();
-                    setGym(data.gym || data.data || data);
+                    console.log('Raw gym data received:', data);
+                    
+                    // Handle different response formats
+                    const gymData = data.gym || data.data || data;
+                    
+                    // Log the processed gym data
+                    console.log('Processed gym data:', gymData);
+                    
+                    setGym(gymData);
                 } else {
                     console.error('Failed to fetch gym:', response.status, response.statusText);
                     Alert.alert('Error', 'Failed to load gym details');
@@ -91,6 +117,14 @@ export default function GymDetailsScreen() {
         );
     }
 
+    // Debug logging to check what fields are available
+    console.log('Gym object keys:', Object.keys(gym));
+    console.log('Gym name:', gym.name);
+    console.log('Gym address:', gym.address);
+    console.log('Gym pricing:', gym.pricing);
+    console.log('Gym amenities:', gym.amenities);
+    console.log('Gym operatingHours:', gym.operatingHours);
+
     return (
         <View style={styles.container}>
             <Stack.Screen
@@ -111,8 +145,8 @@ export default function GymDetailsScreen() {
             <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
                 {/* Gym Cover Image */}
                 <View style={styles.imageContainer}>
-                    {gym.photos && gym.photos.length > 0 ? (
-                        <Image source={{ uri: gym.photos[0] }} style={styles.coverImage} />
+                    {(gym.photos || gym.images || []).length > 0 ? (
+                        <Image source={{ uri: (gym.photos || gym.images)[0] }} style={styles.coverImage} />
                     ) : (
                         <View style={styles.placeholderImage}>
                             <Ionicons name="image-outline" size={40} color="#666" />
@@ -123,8 +157,8 @@ export default function GymDetailsScreen() {
                         <View style={styles.ratingContainer}>
                             <Ionicons name="star" size={16} color="#ff8c2b" />
                             <Text style={styles.ratingText}>
-                                {gym.rating?.average ? gym.rating.average.toFixed(1) : 'N/A'}
-                                {' '}({gym.rating?.count || 0})
+                                {(gym.rating?.average || gym.ratingAverage || 0) > 0 ? (gym.rating?.average || gym.ratingAverage).toFixed(1) : 'N/A'}
+                                {' '}({gym.rating?.count || gym.ratingCount || 0})
                             </Text>
                         </View>
                     </View>
@@ -135,13 +169,13 @@ export default function GymDetailsScreen() {
                     <View style={styles.infoRow}>
                         <Ionicons name="location-outline" size={20} color="#ff8c2b" />
                         <Text style={styles.infoText}>
-                            {(gym.address?.street || gym.address?.address) || 'N/A'}, {gym.address?.area || 'N/A'}, {gym.address?.city || 'N/A'}
+                            {(gym.address?.street || gym.address?.address || gym.street || 'N/A')}, {(gym.address?.area || gym.area || 'N/A')}, {(gym.address?.city || gym.city || 'N/A')}
                         </Text>
                     </View>
 
                     <View style={styles.infoRow}>
                         <Ionicons name="call-outline" size={20} color="#ff8c2b" />
-                        <Text style={styles.infoText}>{gym.phone || gym.contactNumber || 'N/A'}</Text>
+                        <Text style={styles.infoText}>{gym.phone || gym.contactNumber || gym.phoneNumber || gym.ownerId?.phone || gym.owner?.phone || 'N/A'}</Text>
                     </View>
 
                     <View style={styles.infoRow}>
@@ -156,11 +190,11 @@ export default function GymDetailsScreen() {
                     <View style={styles.pricingContainer}>
                         <View style={styles.pricingItem}>
                             <Text style={styles.pricingLabel}>Per Day:</Text>
-                            <Text style={styles.pricingValue}>{gym.pricing?.perDay ? `${gym.pricing.perDay} birr` : 'N/A'}</Text>
+                            <Text style={styles.pricingValue}>{gym.pricing?.perDay || gym.perDay ? `${gym.pricing?.perDay || gym.perDay} birr` : 'N/A'}</Text>
                         </View>
                         <View style={styles.pricingItem}>
                             <Text style={styles.pricingLabel}>Per Month:</Text>
-                            <Text style={styles.pricingValue}>{gym.pricing?.perMonth ? `${gym.pricing.perMonth} birr` : 'N/A'}</Text>
+                            <Text style={styles.pricingValue}>{gym.pricing?.perMonth || gym.perMonth ? `${gym.pricing?.perMonth || gym.perMonth} birr` : 'N/A'}</Text>
                         </View>
                     </View>
                 </View>
@@ -169,7 +203,7 @@ export default function GymDetailsScreen() {
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>About</Text>
                     <Text style={styles.descriptionText}>
-                        {gym.description || 'No description available.'}
+                        {gym.description || gym.desc || 'No description available.'}
                     </Text>
                 </View>
 
@@ -177,22 +211,24 @@ export default function GymDetailsScreen() {
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Amenities</Text>
                     <View style={styles.amenitiesContainer}>
-                        {(gym.amenities || gym.amenityList || []).map((amenity: string, index: number) => (
-                            <View key={index} style={styles.amenityTag}>
-                                <Text style={styles.amenityText}>{amenity}</Text>
-                            </View>
-                        )) || <Text style={styles.noAmenitiesText}>No amenities listed</Text>}
+                        {(gym.amenities || gym.amenityList || gym.amenitiesList || []).length > 0 ? 
+                            (gym.amenities || gym.amenityList || gym.amenitiesList || []).map((amenity: string, index: number) => (
+                                <View key={index} style={styles.amenityTag}>
+                                    <Text style={styles.amenityText}>{amenity}</Text>
+                                </View>
+                            ))
+                            : <Text style={styles.noAmenitiesText}>No amenities listed</Text>}
                     </View>
                 </View>
 
                 {/* Operating Hours */}
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Operating Hours</Text>
-                    {gym.operatingHours && Object.entries(gym.operatingHours).length > 0 ? (
-                        Object.entries(gym.operatingHours).map(([day, hours]: [string, any]) => (
+                    {(gym.operatingHours || gym.hours) && Object.entries(gym.operatingHours || gym.hours).length > 0 ? (
+                        Object.entries(gym.operatingHours || gym.hours).map(([day, hours]: [string, any]) => (
                             <View key={day} style={styles.hourRow}>
                                 <Text style={styles.hourDay}>{day.charAt(0).toUpperCase() + day.slice(1)}</Text>
-                                <Text style={styles.hourTime}>{hours?.open || 'Closed'} - {hours?.close || 'Closed'}</Text>
+                                <Text style={styles.hourTime}>{hours?.open || hours?.startTime || 'Closed'} - {hours?.close || hours?.endTime || 'Closed'}</Text>
                             </View>
                         ))
                     ) : (
