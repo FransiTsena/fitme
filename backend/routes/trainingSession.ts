@@ -1,5 +1,5 @@
 import express from "express";
-import { createSession, getGymSessions, updateSession, toggleSessionStatus, getMySessions } from "../controllers/trainingSessionController.js";
+import { createSession, getGymSessions, getSessionById, updateSession, toggleSessionStatus, getMySessions } from "../controllers/trainingSessionController.js";
 import { requireAuth } from "../middleware/requireAuth.js";
 
 const router = express.Router();
@@ -15,8 +15,8 @@ router.get("/my-sessions", requireAuth, getMySessions);
 // Update session (requires auth)
 router.put("/:id", requireAuth, updateSession);
 
-// Toggle status (requires auth)
-router.patch("/:id/status", requireAuth, toggleSessionStatus);
+// Toggle status
+router.patch("/:id/status", toggleSessionStatus);
 
 // Get all sessions for a gym (Public)
 router.get("/gym/:gymId", getGymSessions);

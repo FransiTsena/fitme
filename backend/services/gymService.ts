@@ -62,7 +62,7 @@ export const gymService = {
     createGym: async (gymData: CreateGymData) => {
         try {
             console.log("Creating gym for owner ID:", gymData.ownerId);
-            
+
             // Explicitly cast and validate ownerId
             let ownerObjectId: Types.ObjectId;
             try {
@@ -189,6 +189,31 @@ export const gymService = {
             }
 
             return gym;
+        } catch (error) {
+            throw error;
+        }
+    },
+
+    // Get nearby gyms based on location
+    getNearbyGyms: async (latitude: number, longitude: number, maxDistanceKm: number = 10) => {
+        try {
+            const maxDistanceInMeters = maxDistanceKm * 1000; // Convert km to meters
+
+            const gyms = await Gym.find({
+                location: {
+                    $near: {
+                        $geometry: {
+                            type: "Point",
+                            coordinates: [longitude, latitude] // GeoJSON format: [longitude, latitude]
+                        },
+                        $maxDistance: maxDistanceInMeters
+                    }
+                },
+                isActive: true, // Only return active gyms
+                verificationStatus: 'approved' // Only return approved gyms
+            }).populate('ownerId', 'name email phone');
+
+            return gyms;
         } catch (error) {
             throw error;
         }

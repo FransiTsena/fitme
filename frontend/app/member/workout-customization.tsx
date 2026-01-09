@@ -81,7 +81,7 @@ export default function WorkoutCustomizationScreen() {
                         <Text style={styles.cardDesc}>
                             Elevate your fitness game with a personal fitness ai chatbot
                         </Text>
-                        <TouchableOpacity style={styles.buttonWrapper} onPress={() => router.push("/workout-ai-welcome")}>
+                        <TouchableOpacity style={styles.buttonWrapper} onPress={() => router.push("/member/workout-ai-welcome")}>
                             <LinearGradient
                                 colors={['#ff8c2b', '#ff6b00']}
                                 start={{ x: 0, y: 0 }}
@@ -101,7 +101,7 @@ export default function WorkoutCustomizationScreen() {
                         <Text style={styles.cardDesc}>
                             Elevate your fitness game with a personal fitness ai chatbot
                         </Text>
-                        <TouchableOpacity style={styles.buttonWrapper} onPress={() => router.push("/workout-manual-plan")}>
+                        <TouchableOpacity style={styles.buttonWrapper} onPress={() => router.push("/member/workout-manual-plan")}>
                             <LinearGradient
                                 colors={['#ff8c2b', '#ff6b00']}
                                 start={{ x: 0, y: 0 }}

@@ -4,7 +4,7 @@ import { trainingSessionService } from "../services/trainingSessionService.js";
 export const createSession = async (req: Request, res: Response) => {
     try {
         const { title, description, durationMinutes, price } = req.body;
-        
+
         // Ensure user is authenticated and is a trainer
         // For Dev: allow passing userId in body if needed, but ideally comes from req.user
         const userId = req.user?.id || req.body.userId;
@@ -61,6 +61,19 @@ export const getGymSessions = async (req: Request, res: Response) => {
         }
         const sessions = await trainingSessionService.getSessionsByGym(gymId);
         res.status(200).json({ sessions });
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+export const getSessionById = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        if (!id) {
+            return res.status(400).json({ error: "Session ID is required" });
+        }
+        const session = await trainingSessionService.getSessionById(id);
+        res.status(200).json({ session });
     } catch (error: any) {
         res.status(500).json({ error: error.message });
     }

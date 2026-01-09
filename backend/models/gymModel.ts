@@ -61,6 +61,12 @@ const gymSchema = new mongoose.Schema({
     sunday: { open: String, close: String },
   },
   amenities: [{ type: String }],
+
+  // Pricing
+  pricing: {
+    perDay: { type: Number, default: 0 },
+    perMonth: { type: Number, default: 0 },
+  },
 }, {
   timestamps: true,
 });
@@ -102,6 +108,10 @@ export interface IGym {
     sunday?: { open?: string; close?: string };
   };
   amenities?: string[];
+  pricing?: {
+    perDay: number;
+    perMonth: number;
+  };
   createdAt: Date;
   updatedAt: Date;
 }

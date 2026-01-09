@@ -181,7 +181,8 @@ const useOwnerStore = create<OwnerState>((set, get) => ({
             }
 
             // The API returns an array of gyms, we take the first one
-            const gym = Array.isArray(data.data) ? data.data[0] : data.data;
+            const gymData = data.data || data;
+            const gym = Array.isArray(gymData) ? gymData[0] : gymData;
 
             set({
                 gym,
@@ -312,7 +313,7 @@ const useOwnerStore = create<OwnerState>((set, get) => ({
             }
 
             set({
-                gym: data.data,
+                gym: data.data || data,
                 loading: false,
             });
 
@@ -342,11 +343,11 @@ function transformAnalyticsData(rawData: any): Analytics {
     const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const now = new Date();
     const monthlyRevenue: RevenueData[] = [];
-    
+
     // If we have revenue by type, distribute it across months (simplified)
     const totalRevenue = rawData.revenue?.total || 0;
     const avgMonthly = totalRevenue / 6;
-    
+
     for (let i = 5; i >= 0; i--) {
         const monthIndex = (now.getMonth() - i + 12) % 12;
         // Add some variation for visualization
