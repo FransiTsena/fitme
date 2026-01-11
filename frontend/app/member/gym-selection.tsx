@@ -19,7 +19,7 @@ const DEFAULT_API_BASE_URL = Platform.select({
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || DEFAULT_API_BASE_URL;
 
 export default function GymSelectionScreen() {
-    const { user } = useAuth();
+    const { user, token } = useAuth();
     const [gyms, setGyms] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -29,7 +29,7 @@ export default function GymSelectionScreen() {
             try {
                 const response = await fetch(`${API_BASE_URL}/gyms`, {
                     headers: {
-                        'Authorization': `Bearer ${user?.token}`,
+                        'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json',
                     },
                 });
@@ -53,7 +53,7 @@ export default function GymSelectionScreen() {
         };
 
         fetchGyms();
-    }, [user?.token]);
+    }, [token]);
 
     const handleSelectGym = (gymId: string) => {
         // Navigate to gym plans page to select a membership

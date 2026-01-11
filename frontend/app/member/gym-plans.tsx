@@ -17,7 +17,7 @@ const DEFAULT_API_BASE_URL = Platform.select({
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || DEFAULT_API_BASE_URL;
 
 export default function GymPlansScreen() {
-    const { user } = useAuth();
+    const { user, token } = useAuth();
     const { gymId } = useLocalSearchParams<{ gymId: string }>();
     const [gym, setGym] = useState<any>(null);
     const [plans, setPlans] = useState<any[]>([]);
@@ -30,7 +30,7 @@ export default function GymPlansScreen() {
                 // Fetch gym details
                 const gymResponse = await fetch(`${API_BASE_URL}/gyms/${gymId}`, {
                     headers: {
-                        'Authorization': `Bearer ${user?.token}`,
+                        'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json',
                     },
                 });
@@ -43,9 +43,9 @@ export default function GymPlansScreen() {
                 }
 
                 // Fetch gym plans
-                const plansResponse = await fetch(`${process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000'}/memberships/gym/${gymId}`, {
+                const plansResponse = await fetch(`${API_BASE_URL}/memberships/gym/${gymId}`, {
                     headers: {
-                        'Authorization': `Bearer ${user?.token}`,
+                        'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json',
                     },
                 });
@@ -68,14 +68,14 @@ export default function GymPlansScreen() {
         if (gymId) {
             fetchGymAndPlans();
         }
-    }, [user?.token, gymId]);
+    }, [token, gymId]);
 
     const handleSubscribe = async (planId: string) => {
         try {
-            const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000'}/subscriptions/purchase`, {
+            const response = await fetch(`${API_BASE_URL}/subscriptions/purchase`, {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${user?.token}`,
+                    'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({ planId }),

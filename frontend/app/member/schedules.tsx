@@ -2,7 +2,6 @@ import { Logo } from '@/components/Logo';
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, router } from 'expo-router';
 import { FlatList, StyleSheet, Text, TouchableOpacity, View, Platform } from 'react-native';
-
 import { UserBottomNav } from '@/components/UserBottomNav';
 import { ThemedText } from '@/components/themed-text';
 import ProtectedRoute from '@/components/ProtectedRoute';
@@ -18,7 +17,7 @@ const DEFAULT_API_BASE_URL = Platform.select({
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || DEFAULT_API_BASE_URL;
 
 export default function SchedulesScreen() {
-    const { user } = useAuth();
+    const { user, token } = useAuth();
     const [userMemberships, setUserMemberships] = useState<any[]>([]);
     const [gymSessions, setGymSessions] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -28,9 +27,9 @@ export default function SchedulesScreen() {
         const fetchUserData = async () => {
             try {
                 // First, get user's active memberships
-                const membershipsResponse = await fetch(`${process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000'}/subscriptions/my`, {
+                const membershipsResponse = await fetch(`${API_BASE_URL}/subscriptions/my`, {
                     headers: {
-                        'Authorization': `Bearer ${user?.token}`,
+                        'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json',
                     },
                 });
@@ -50,7 +49,7 @@ export default function SchedulesScreen() {
                         if (gymIds.length > 0) {
                             const sessionsResponse = await fetch(`${API_BASE_URL}/training-sessions/gym/${gymIds[0]}`, {
                                 headers: {
-                                    'Authorization': `Bearer ${user?.token}`,
+                                    'Authorization': `Bearer ${token}`,
                                     'Content-Type': 'application/json',
                                 },
                             });
@@ -71,10 +70,13 @@ export default function SchedulesScreen() {
             }
         };
 
-        if (user?.token) {
-            fetchUserData();
+        // If no token, stop loading to avoid hanging UI
+        if (!token) {
+            setLoading(false);
+            return;
         }
-    }, [user?.token]);
+        fetchUserData();
+    }, [token]);
 
     const renderSessionItem = ({ item }: { item: any }) => (
         <View style={styles.sessionCard}>

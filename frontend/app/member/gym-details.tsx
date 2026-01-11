@@ -42,7 +42,7 @@ const getNestedValue = (obj: any, path: string, defaultValue: any = 'N/A') => {
 
 export default function GymDetailsScreen() {
     const { id } = useLocalSearchParams<{ id: string }>();
-    const { user } = useAuth();
+    const { user, token } = useAuth();
     const [gym, setGym] = useState<any>(null);
     const [loading, setLoading] = useState(true);
 
@@ -53,7 +53,7 @@ export default function GymDetailsScreen() {
 
                 const response = await fetch(`${API_BASE_URL}/gyms/${id}`, {
                     headers: {
-                        'Authorization': `Bearer ${user?.token}`,
+                        'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json',
                     },
                 });
@@ -84,7 +84,7 @@ export default function GymDetailsScreen() {
         if (id) {
             fetchGym();
         }
-    }, [id, user?.token]);
+    }, [id, token]);
 
     if (loading) {
         return (

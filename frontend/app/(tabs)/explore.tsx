@@ -21,7 +21,7 @@ const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || DEFAULT_API_BASE_URL;
 
 
 export default function TabTwoScreen() {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const [gyms, setGyms] = useState<any[]>([]);
   const [filteredGyms, setFilteredGyms] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -44,14 +44,14 @@ export default function TabTwoScreen() {
 
           response = await fetch(`${API_BASE_URL}/gyms/nearby?latitude=${dummyLat}&longitude=${dummyLng}&maxDistance=10`, {
             headers: {
-              'Authorization': `Bearer ${user?.token}`,
+              'Authorization': `Bearer ${token}`,
               'Content-Type': 'application/json',
             },
           });
         } else {
           response = await fetch(`${API_BASE_URL}/gyms`, {
             headers: {
-              'Authorization': `Bearer ${user?.token}`,
+              'Authorization': `Bearer ${token}`,
               'Content-Type': 'application/json',
             },
           });
@@ -77,7 +77,7 @@ export default function TabTwoScreen() {
     };
 
     fetchGyms();
-  }, [user?.token, useLocation]);
+  }, [token, useLocation]);
 
   // Apply search and filters
   useEffect(() => {

@@ -48,7 +48,7 @@ interface Subscription {
 }
 
 export default function MySubscriptionsScreen() {
-    const { user } = useAuth();
+    const { user, token } = useAuth();
     const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -57,7 +57,7 @@ export default function MySubscriptionsScreen() {
         try {
             const response = await fetch(`${API_BASE_URL}/subscriptions/my`, {
                 headers: {
-                    'Authorization': `Bearer ${user?.token}`,
+                    'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json',
                 },
             });
@@ -77,11 +77,11 @@ export default function MySubscriptionsScreen() {
     };
 
     useEffect(() => {
-        if (user?.token) {
+        if (token) {
             fetchSubscriptions();
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [user?.token]);
+    }, [token]);
 
     const onRefresh = () => {
         setRefreshing(true);
