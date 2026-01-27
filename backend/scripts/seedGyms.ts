@@ -589,12 +589,12 @@ const seedGyms = async () => {
 
         // Fetch the inserted gyms to get their IDs
         const insertedGyms = await Gym.find({}).select('_id ownerId name');
-        
+
         // Create membership plans for each gym
         let totalPlansCreated = 0;
         for (const gym of insertedGyms) {
             console.log(`Creating plans for gym: ${gym.name}`);
-            
+
             for (const planData of membershipPlansData) {
                 const plan = new MembershipPlan({
                     gymId: gym._id,
