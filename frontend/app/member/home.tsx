@@ -236,7 +236,7 @@ function CustomCalendar() {
 
 // --- Main Screen ---
 export default function UserHomeScreen() {
-    const { user } = useAuth();
+    const { user, token } = useAuth();
     const userRole = user?.role;
 
     // State for gyms
@@ -259,14 +259,14 @@ export default function UserHomeScreen() {
 
                     response = await fetch(`${API_BASE_URL}/gyms/nearby?latitude=${dummyLat}&longitude=${dummyLng}&maxDistance=10`, {
                         headers: {
-                            'Authorization': `Bearer ${user?.token}`,
+                            'Authorization': `Bearer ${token}`,
                             'Content-Type': 'application/json',
                         },
                     });
                 } else {
                     response = await fetch(`${API_BASE_URL}/gyms`, {
                         headers: {
-                            'Authorization': `Bearer ${user?.token}`,
+                            'Authorization': `Bearer ${token}`,
                             'Content-Type': 'application/json',
                         },
                     });
@@ -288,7 +288,7 @@ export default function UserHomeScreen() {
         };
 
         fetchGyms();
-    }, [user?.token, useLocation]);
+    }, [token, useLocation]);
 
     return (
         <View style={styles.container} testID="user-dashboard">

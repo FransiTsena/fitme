@@ -6,10 +6,10 @@ const router = express.Router();
 
 console.log("🛠️ Loading Subscription Routes...");
 
-// Buy a membership
+// Buy a membership (requires auth)
 router.post("/purchase", requireAuth, purchaseMembership);
 
-// Get my memberships
+// Get my memberships (requires auth)
 router.get("/my", requireAuth, getMyMemberships);
 
 export default router;

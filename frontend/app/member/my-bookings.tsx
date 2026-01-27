@@ -51,7 +51,7 @@ interface Booking {
 }
 
 export default function MyBookingsScreen() {
-    const { user } = useAuth();
+    const { user, token } = useAuth();
     const [bookings, setBookings] = useState<Booking[]>([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -61,7 +61,7 @@ export default function MyBookingsScreen() {
         try {
             const response = await fetch(`${API_BASE_URL}/bookings/my`, {
                 headers: {
-                    'Authorization': `Bearer ${user?.token}`,
+                    'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json',
                 },
             });
@@ -81,11 +81,11 @@ export default function MyBookingsScreen() {
     };
 
     useEffect(() => {
-        if (user?.token) {
+        if (token) {
             fetchBookings();
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [user?.token]);
+    }, [token]);
 
     const onRefresh = () => {
         setRefreshing(true);
@@ -106,7 +106,7 @@ export default function MyBookingsScreen() {
                             const response = await fetch(`${API_BASE_URL}/bookings/${bookingId}/status`, {
                                 method: 'PATCH',
                                 headers: {
-                                    'Authorization': `Bearer ${user?.token}`,
+                                    'Authorization': `Bearer ${token}`,
                                     'Content-Type': 'application/json',
                                 },
                                 body: JSON.stringify({ status: 'cancelled' }),

@@ -22,7 +22,7 @@ const TIME_SLOTS = [
 ];
 
 export default function BookSessionScreen() {
-    const { user } = useAuth();
+    const { user, token } = useAuth();
     const { sessionId } = useLocalSearchParams<{ sessionId: string }>();
     const [session, setSession] = useState<any>(null);
     const [loading, setLoading] = useState(true);
@@ -50,7 +50,7 @@ export default function BookSessionScreen() {
             try {
                 const response = await fetch(`${API_BASE_URL}/training-sessions/${sessionId}`, {
                     headers: {
-                        'Authorization': `Bearer ${user?.token}`,
+                        'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json',
                     },
                 });
@@ -71,7 +71,7 @@ export default function BookSessionScreen() {
         if (sessionId) {
             fetchSession();
         }
-    }, [user?.token, sessionId]);
+    }, [token, sessionId]);
 
     const formatDate = (date: Date) => {
         const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -91,10 +91,10 @@ export default function BookSessionScreen() {
 
         setBooking(true);
         try {
-            const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000'}/bookings/book`, {
+            const response = await fetch(`${API_BASE_URL}/bookings/book`, {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${user?.token}`,
+                    'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
