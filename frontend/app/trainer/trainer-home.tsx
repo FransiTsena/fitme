@@ -1,6 +1,6 @@
 import { Logo } from "@/components/Logo";
 import { Ionicons } from "@expo/vector-icons";
-import { Stack, router } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
     StyleSheet,
@@ -11,22 +11,24 @@ import {
     RefreshControl,
     ActivityIndicator,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "@/context/AuthContext";
 import useTrainerStore from "@/store/trainerStore";
 
 export default function TrainerHomeScreen() {
+    const router = useRouter();
     const { user, token } = useAuth();
-    const { 
-        profile, 
-        bookings, 
+    const {
+        profile,
+        bookings,
         stats,
-        loading, 
-        fetchTrainerProfile, 
+        loading,
+        fetchTrainerProfile,
         fetchBookings,
         fetchStats,
         fetchSessions
     } = useTrainerStore();
-    
+
     const [refreshing, setRefreshing] = useState(false);
     const [initialLoading, setInitialLoading] = useState(true);
 
@@ -36,7 +38,7 @@ export default function TrainerHomeScreen() {
             setInitialLoading(false);
             return;
         }
-        
+
         try {
             await Promise.all([
                 fetchTrainerProfile(user.id, token),
@@ -53,7 +55,7 @@ export default function TrainerHomeScreen() {
 
     useEffect(() => {
         loadData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user?.id, token]);
 
     // Check if profile is complete (has specialization and bio)
@@ -118,7 +120,7 @@ export default function TrainerHomeScreen() {
     }
 
     return (
-        <View style={styles.container} testID="trainer-dashboard">
+        <SafeAreaView style={styles.container} edges={['top']} testID="trainer-dashboard">
             <Stack.Screen
                 options={{
                     headerTitle: () => <Logo size={24} />,
@@ -140,7 +142,7 @@ export default function TrainerHomeScreen() {
                 }}
             />
 
-            <ScrollView 
+            <ScrollView
                 style={styles.scrollView}
                 contentContainerStyle={styles.contentContainer}
                 refreshControl={
@@ -187,7 +189,7 @@ export default function TrainerHomeScreen() {
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Quick Actions</Text>
                     <View style={styles.quickActionsGrid}>
-                        <TouchableOpacity 
+                        <TouchableOpacity
                             style={styles.actionCard}
                             onPress={() => router.push("/trainer/sessions" as any)}
                         >
@@ -197,7 +199,7 @@ export default function TrainerHomeScreen() {
                             <Text style={styles.actionText}>Create Session</Text>
                         </TouchableOpacity>
 
-                        <TouchableOpacity 
+                        <TouchableOpacity
                             style={styles.actionCard}
                             onPress={() => router.push("/trainer/schedule" as any)}
                         >
@@ -207,7 +209,7 @@ export default function TrainerHomeScreen() {
                             <Text style={styles.actionText}>View Schedule</Text>
                         </TouchableOpacity>
 
-                        <TouchableOpacity 
+                        <TouchableOpacity
                             style={styles.actionCard}
                             onPress={() => router.push("/trainer/clients" as any)}
                         >
@@ -217,7 +219,7 @@ export default function TrainerHomeScreen() {
                             <Text style={styles.actionText}>My Clients</Text>
                         </TouchableOpacity>
 
-                        <TouchableOpacity 
+                        <TouchableOpacity
                             style={styles.actionCard}
                             onPress={() => router.push("/trainer/profile")}
                         >
@@ -242,8 +244,8 @@ export default function TrainerHomeScreen() {
                         <ActivityIndicator size="small" color="#ff8c2b" style={{ marginTop: 20 }} />
                     ) : upcomingBookings.length > 0 ? (
                         upcomingBookings.map((booking) => (
-                            <TouchableOpacity 
-                                key={booking._id} 
+                            <TouchableOpacity
+                                key={booking._id}
                                 style={styles.bookingCard}
                                 onPress={() => router.push("/trainer/schedule" as any)}
                             >
@@ -317,7 +319,7 @@ export default function TrainerHomeScreen() {
                     <Text style={styles.navText}>Profile</Text>
                 </TouchableOpacity>
             </View>
-        </View>
+        </SafeAreaView>
     );
 }
 

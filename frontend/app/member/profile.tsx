@@ -16,7 +16,7 @@ import {
 import { useAuth } from "@/context/AuthContext";
 
 export default function MemberProfileScreen() {
-    const { user, token } = useAuth();
+    const { user, token, logout } = useAuth();
     const [isEditing, setIsEditing] = useState(false);
     const [formData, setFormData] = useState({
         name: user?.name || '',
@@ -30,6 +30,24 @@ export default function MemberProfileScreen() {
     const handleSave = async () => {
         Alert.alert('Feature Coming Soon', 'Profile updates will be available in the next release.');
         setIsEditing(false);
+    };
+
+    const handleLogout = () => {
+        Alert.alert(
+            "Logout",
+            "Are you sure you want to logout?",
+            [
+                { text: "Cancel", style: "cancel" },
+                {
+                    text: "Logout",
+                    style: "destructive",
+                    onPress: () => {
+                        logout();
+                        router.replace("/login");
+                    }
+                }
+            ]
+        );
     };
 
     return (
@@ -169,9 +187,14 @@ export default function MemberProfileScreen() {
                         </TouchableOpacity>
                     </>
                 ) : (
-                    <TouchableOpacity style={styles.editButton} onPress={() => setIsEditing(true)}>
-                        <Text style={styles.editButtonText}>Edit Profile</Text>
-                    </TouchableOpacity>
+                    <>
+                        <TouchableOpacity style={styles.editButton} onPress={() => setIsEditing(true)}>
+                            <Text style={styles.editButtonText}>Edit Profile</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+                            <Text style={styles.logoutButtonText}>Logout</Text>
+                        </TouchableOpacity>
+                    </>
                 )}
             </View>
         </KeyboardAvoidingView>
@@ -289,6 +312,20 @@ const styles = StyleSheet.create({
     },
     saveButtonText: {
         color: "#fff",
+        fontWeight: "bold",
+        fontSize: 16,
+    },
+    logoutButton: {
+        flex: 1,
+        backgroundColor: "#222",
+        padding: 15,
+        borderRadius: 12,
+        alignItems: "center",
+        borderWidth: 1,
+        borderColor: "#ff4444",
+    },
+    logoutButtonText: {
+        color: "#ff4444",
         fontWeight: "bold",
         fontSize: 16,
     },

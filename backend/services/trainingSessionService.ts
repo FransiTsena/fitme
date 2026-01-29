@@ -50,18 +50,63 @@ export const trainingSessionService = {
         if (!trainer) {
             throw new Error("Trainer profile not found");
         }
-        
+
         return await TrainingSession.find({ trainerId: trainer._id })
             .sort({ createdAt: -1 });
     },
 
     /**
-     * Get sessions by gym (Public View)
+     * Get sessions by gym
      */
-    getSessionsByGym: async (gymId: string) => {
-        return await TrainingSession.find({ gymId, isActive: true }).populate("trainerId", "specialization rating");
-        // Note: We might need to populate 'trainerId' which refers to Trainer model, 
-        // which then refers to User model for name.
+    getSessionsByGym: async (gymId: string, userId?: string) => {
+        // If userId is provided, we can optionally check for membership
+        // In many fitness apps, you must be a member to see/book sessions.
+        // Let's implement the check as requested.
+
+        if (userId) {
+            const { UserMembership } = await import("../models/userMembershipModel.js");
+            const { Trainer } = await import("../models/trainerModel.js");
+            const { Gym } = await import("../models/gymModel.js");
+
+            // 1. Check if user is the gym owner
+            const gym = await Gym.findById(gymId);
+            if (gym && gym.ownerId.toString() === userId) {
+                return await TrainingSession.find({ gymId, isActive: true })
+                    .populate({
+                        path: "trainerId",
+                        populate: { path: "userId", select: "name" }
+                    });
+            }
+
+            // 2. Check if user is a trainer at this gym
+            const trainer = await Trainer.findOne({ userId, gymId });
+            if (trainer) {
+                return await TrainingSession.find({ gymId, isActive: true })
+                    .populate({
+                        path: "trainerId",
+                        populate: { path: "userId", select: "name" }
+                    });
+            }
+
+            // 3. Check for active membership
+            const membership = await UserMembership.findOne({
+                userId,
+                gymId,
+                status: "active",
+                endDate: { $gt: new Date() }
+            });
+
+            if (!membership) {
+                // If not a member, owner or trainer, return empty list
+                return [];
+            }
+        }
+
+        return await TrainingSession.find({ gymId, isActive: true })
+            .populate({
+                path: "trainerId",
+                populate: { path: "userId", select: "name" }
+            });
     },
 
     /**

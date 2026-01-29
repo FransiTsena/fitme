@@ -2,11 +2,12 @@
 import { Logo } from '@/components/Logo';
 import { UserBottomNav } from '@/components/UserBottomNav';
 import { Ionicons } from '@expo/vector-icons';
-import { Stack } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import React from 'react';
 import { ImageBackground, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function WorkoutAIWelcomeScreen() {
+    const router = useRouter();
     return (
         <View style={styles.container}>
             <Stack.Screen
@@ -19,7 +20,7 @@ export default function WorkoutAIWelcomeScreen() {
                                 <Ionicons name="notifications-outline" size={24} color="#fff" />
                                 <View style={styles.badge} />
                             </TouchableOpacity>
-                            <TouchableOpacity>
+                            <TouchableOpacity onPress={() => router.push("/member/menu")}>
                                 <Ionicons name="menu-outline" size={24} color="#fff" />
                             </TouchableOpacity>
                         </View>
@@ -58,7 +59,7 @@ export default function WorkoutAIWelcomeScreen() {
                     </Text>
 
                     {/* Get Started Button */}
-                    <TouchableOpacity style={styles.getStartedBtn} onPress={() => console.log("Start AI Chat")}>
+                    <TouchableOpacity style={styles.getStartedBtn} onPress={() => router.push("/member/workout-ai-generation")}>
                         <Text style={styles.getStartedText}>Get Started</Text>
                         <Ionicons name="arrow-forward" size={20} color="#fff" />
                     </TouchableOpacity>

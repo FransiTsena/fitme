@@ -1,6 +1,6 @@
 import { Logo } from "@/components/Logo";
 import { Ionicons } from "@expo/vector-icons";
-import { Stack, router } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import React, { useEffect, useState, useMemo } from "react";
 import {
     StyleSheet,
@@ -15,15 +15,16 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import useTrainerStore, { SessionBooking } from "@/store/trainerStore";
 export default function ScheduleScreen() {
+    const router = useRouter();
     const { token } = useAuth();
-    const { 
-        bookings, 
-        bookingsLoading, 
+    const {
+        bookings,
+        bookingsLoading,
         fetchBookings,
         updateBookingStatus,
         loading
     } = useTrainerStore();
-    
+
     const [refreshing, setRefreshing] = useState(false);
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [filter, setFilter] = useState<'all' | 'booked' | 'completed' | 'cancelled'>('all');
@@ -46,7 +47,7 @@ export default function ScheduleScreen() {
         const dates = [];
         const startOfWeek = new Date(selectedDate);
         startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
-        
+
         for (let i = 0; i < 7; i++) {
             const date = new Date(startOfWeek);
             date.setDate(date.getDate() + i);
@@ -85,7 +86,7 @@ export default function ScheduleScreen() {
         if (!token) return;
 
         const action = newStatus === 'completed' ? 'mark as completed' : 'cancel';
-        
+
         Alert.alert(
             `${newStatus === 'completed' ? 'Complete' : 'Cancel'} Session`,
             `Are you sure you want to ${action} this session?`,
@@ -157,7 +158,7 @@ export default function ScheduleScreen() {
                     <Text style={styles.monthText}>
                         {monthNames[selectedDate.getMonth()]} {selectedDate.getFullYear()}
                     </Text>
-                    <TouchableOpacity 
+                    <TouchableOpacity
                         onPress={() => setSelectedDate(new Date())}
                         style={styles.todayButton}
                     >
@@ -242,7 +243,7 @@ export default function ScheduleScreen() {
                             <View style={styles.timeColumn}>
                                 <Text style={styles.timeText}>{formatTime(booking.timeSlot)}</Text>
                             </View>
-                            
+
                             <View style={[styles.bookingContent, { borderLeftColor: getStatusColor(booking.status) }]}>
                                 <View style={styles.bookingHeader}>
                                     <Text style={styles.sessionTitle}>

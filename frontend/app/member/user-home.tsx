@@ -4,7 +4,7 @@ import { Logo } from "@/components/Logo";
 import { UserBottomNav } from "@/components/UserBottomNav";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { Stack, router } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
 import {
     Dimensions,
@@ -15,7 +15,10 @@ import {
     TouchableOpacity,
     View,
     Platform,
+    StatusBar,
+    ActivityIndicator,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "@/context/AuthContext";
 
 const { width } = Dimensions.get('window');
@@ -236,6 +239,7 @@ function CustomCalendar() {
 
 // --- Main Screen ---
 export default function UserHomeScreen() {
+    const router = useRouter();
     const { user, token } = useAuth();
     const userRole = user?.role;
 
@@ -244,6 +248,10 @@ export default function UserHomeScreen() {
     const [loadingGyms, setLoadingGyms] = useState(true);
     const [useLocation, setUseLocation] = useState(false); // Toggle between all gyms and nearby gyms
     const [locationError, setLocationError] = useState<string | null>(null);
+
+    // State for sessions
+    const [sessions, setSessions] = useState<any[]>([]);
+    const [loadingSessions, setLoadingSessions] = useState(true);
 
     // Fetch gyms from API
     useEffect(() => {
@@ -287,11 +295,34 @@ export default function UserHomeScreen() {
             }
         };
 
-        fetchGyms();
+        const fetchSessions = async () => {
+            try {
+                const response = await fetch(`${API_BASE_URL}/bookings/my`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    setSessions(data.bookings || []);
+                }
+            } catch (error) {
+                console.error('Error fetching sessions:', error);
+            } finally {
+                setLoadingSessions(false);
+            }
+        };
+
+        if (token) {
+            fetchGyms();
+            fetchSessions();
+        }
     }, [token, useLocation]);
 
     return (
-        <View style={styles.container} testID="user-dashboard">
+        <SafeAreaView style={styles.container} edges={['top']} testID="user-dashboard">
             <Stack.Screen
                 options={{
                     headerTitle: () => <Logo size={24} />,
@@ -336,7 +367,7 @@ export default function UserHomeScreen() {
                             <View style={styles.statusDot} />
                         </View>
                         <View>
-                            <Text style={styles.userName}>Abebe Bekele</Text>
+                            <Text style={styles.userName}>{user?.name || "Member"}</Text>
                             <Text style={styles.userQuote}>Don&apos;t forget to{"\n"}hit your goals</Text>
                         </View>
                     </View>
@@ -435,64 +466,45 @@ export default function UserHomeScreen() {
                 {/* Today's Sessions */}
                 <View style={styles.sectionHeader}>
                     <Text style={styles.sectionTitle}>Today&apos;s Sessions</Text>
-                    <TouchableOpacity>
+                    <TouchableOpacity onPress={() => router.push("/member/my-bookings")}>
                         <Text style={styles.seeAllText}>View All</Text>
                     </TouchableOpacity>
                 </View>
 
-                <View style={styles.sessionCard}>
-                    <View style={styles.sessionHeader}>
-                        <View style={styles.sessionAvatar}>
-                            <Ionicons name="person" size={18} color="#ff8c2b" />
-                        </View>
-                        <View style={{ flex: 1 }}>
-                            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                                <Text style={styles.sessionName}>Abebe Bekele</Text>
-                                <View style={styles.statusBadge}>
-                                    <Text style={styles.statusText}>Active</Text>
+                {loadingSessions ? (
+                    <ActivityIndicator size="small" color="#ff8c2b" style={{ marginVertical: 20 }} />
+                ) : sessions.length > 0 ? (
+                    sessions.slice(0, 2).map((session, index) => (
+                        <View key={session._id || index} style={styles.sessionCard}>
+                            <View style={styles.sessionHeader}>
+                                <View style={styles.sessionAvatar}>
+                                    <Ionicons name="person" size={18} color="#ff8c2b" />
+                                </View>
+                                <View style={{ flex: 1 }}>
+                                    <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                                        <Text style={styles.sessionName}>{session.sessionId?.title || "Training Session"}</Text>
+                                        <View style={styles.statusBadge}>
+                                            <Text style={styles.statusText}>{session.status || "booked"}</Text>
+                                        </View>
+                                    </View>
+                                    <Text style={styles.sessionRole}>Trainer: {session.trainerId?.userId?.name || "Staff"}</Text>
                                 </View>
                             </View>
-                            <Text style={styles.sessionRole}>Personal Trainer</Text>
-                        </View>
-                    </View>
-                    <View style={styles.sessionFooter}>
-                        <View style={styles.sessionInfo}>
-                            <Ionicons name="time-outline" size={14} color="#ff8c2b" />
-                            <Text style={styles.sessionInfoText}>Today 4:00 PM</Text>
-                        </View>
-                        <View style={styles.sessionInfo}>
-                            <Ionicons name="location-outline" size={14} color="#ff8c2b" />
-                            <Text style={styles.sessionInfoText}>Bole fitness Center</Text>
-                        </View>
-                    </View>
-                </View>
-
-                <View style={styles.sessionCard}>
-                    <View style={styles.sessionHeader}>
-                        <View style={styles.sessionAvatar}>
-                            <Ionicons name="person" size={18} color="#ff8c2b" />
-                        </View>
-                        <View style={{ flex: 1 }}>
-                            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                                <Text style={styles.sessionName}>Abebe Bekele</Text>
-                                <View style={styles.statusBadge}>
-                                    <Text style={styles.statusText}>Active</Text>
+                            <View style={styles.sessionFooter}>
+                                <View style={styles.sessionInfo}>
+                                    <Ionicons name="time-outline" size={14} color="#ff8c2b" />
+                                    <Text style={styles.sessionInfoText}>{session.timeSlot}</Text>
+                                </View>
+                                <View style={styles.sessionInfo}>
+                                    <Ionicons name="location-outline" size={14} color="#ff8c2b" />
+                                    <Text style={styles.sessionInfoText}>{session.gymId?.name || "Main Gym"}</Text>
                                 </View>
                             </View>
-                            <Text style={styles.sessionRole}>Personal Trainer</Text>
                         </View>
-                    </View>
-                    <View style={styles.sessionFooter}>
-                        <View style={styles.sessionInfo}>
-                            <Ionicons name="time-outline" size={14} color="#ff8c2b" />
-                            <Text style={styles.sessionInfoText}>Today 4:00 PM</Text>
-                        </View>
-                        <View style={styles.sessionInfo}>
-                            <Ionicons name="location-outline" size={14} color="#ff8c2b" />
-                            <Text style={styles.sessionInfoText}>Bole fitness Center</Text>
-                        </View>
-                    </View>
-                </View>
+                    ))
+                ) : (
+                    <Text style={styles.noGymsText}>No upcoming sessions joined.</Text>
+                )}
 
                 {/* Nearby Gyms */}
                 <View style={styles.sectionHeader}>
@@ -532,7 +544,7 @@ export default function UserHomeScreen() {
             </ScrollView>
 
             <UserBottomNav />
-        </View>
+        </SafeAreaView>
     );
 }
 

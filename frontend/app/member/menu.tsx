@@ -30,49 +30,46 @@ export default function MemberMenu() {
     ];
 
     return (
-        <Modal
-            animationType="slide"
-            transparent={true}
-            onRequestClose={() => router.back()}
-        >
+        <View style={styles.overlay}>
             <TouchableOpacity
-                style={styles.overlay}
+                style={styles.backdrop}
+                activeOpacity={1}
                 onPress={() => router.back()}
-            >
-                <View style={styles.menuContainer} onStartShouldSetResponder={() => true}>
-                    <Stack.Screen
-                        options={{
-                            headerTitle: () => <Logo size={24} />,
-                            headerStyle: { backgroundColor: "#000" },
-                            headerTintColor: "#fff",
-                            headerTitleAlign: "left",
-                            headerShadowVisible: false,
-                        }}
-                    />
+            />
+            <View style={styles.menuContainer} onStartShouldSetResponder={() => true}>
+                <Stack.Screen
+                    options={{
+                        headerTitle: () => <Logo size={24} />,
+                        headerStyle: { backgroundColor: "#000" },
+                        headerTintColor: "#fff",
+                        headerTitleAlign: "left",
+                        headerShadowVisible: false,
+                        headerShown: false
+                    }}
+                />
 
-                    <View style={styles.header}>
-                        <Text style={styles.headerTitle}>Menu</Text>
-                        <TouchableOpacity onPress={() => router.back()} style={styles.closeButton}>
-                            <Ionicons name="close" size={24} color="#fff" />
-                        </TouchableOpacity>
-                    </View>
-
-                    <View style={styles.menuItems}>
-                        {menuItems.map((item, index) => (
-                            <TouchableOpacity
-                                key={index}
-                                style={styles.menuItem}
-                                onPress={item.action}
-                            >
-                                <Ionicons name={item.icon as any} size={24} color="#fff" />
-                                <Text style={styles.menuItemText}>{item.name}</Text>
-                                <Ionicons name="chevron-forward" size={20} color="#666" />
-                            </TouchableOpacity>
-                        ))}
-                    </View>
+                <View style={styles.header}>
+                    <Text style={styles.headerTitle}>Menu</Text>
+                    <TouchableOpacity onPress={() => router.back()} style={styles.closeButton}>
+                        <Ionicons name="close" size={24} color="#fff" />
+                    </TouchableOpacity>
                 </View>
-            </TouchableOpacity>
-        </Modal>
+
+                <View style={styles.menuItems}>
+                    {menuItems.map((item, index) => (
+                        <TouchableOpacity
+                            key={index}
+                            style={styles.menuItem}
+                            onPress={item.action}
+                        >
+                            <Ionicons name={item.icon as any} size={24} color="#fff" />
+                            <Text style={styles.menuItemText}>{item.name}</Text>
+                            <Ionicons name="chevron-forward" size={20} color="#666" />
+                        </TouchableOpacity>
+                    ))}
+                </View>
+            </View>
+        </View>
     );
 }
 
@@ -81,6 +78,9 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: "rgba(0, 0, 0, 0.7)",
         justifyContent: "flex-end",
+    },
+    backdrop: {
+        ...StyleSheet.absoluteFillObject,
     },
     menuContainer: {
         backgroundColor: "#111",

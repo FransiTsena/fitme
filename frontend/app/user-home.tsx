@@ -4,7 +4,7 @@ import { Logo } from "@/components/Logo";
 import { UserBottomNav } from "@/components/UserBottomNav";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { Stack, router } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import React, { useMemo, useState } from "react";
 import {
     Dimensions,
@@ -228,6 +228,7 @@ function CustomCalendar() {
 import { useAuth } from "@/context/AuthContext";
 
 export default function UserHomeScreen() {
+    const router = useRouter();
     const { user } = useAuth();
     const userRole = user?.role;
 

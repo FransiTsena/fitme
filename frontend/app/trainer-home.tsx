@@ -1,6 +1,6 @@
 import { Logo } from "@/components/Logo";
 import { Ionicons } from "@expo/vector-icons";
-import { Stack, router } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import React from "react";
 import {
     StyleSheet,
@@ -9,6 +9,7 @@ import {
 } from "react-native";
 
 export default function TrainerHomeScreen() {
+    const router = useRouter();
     return (
         <View style={styles.container} testID="trainer-dashboard">
             <Stack.Screen

@@ -1,6 +1,6 @@
 import { Logo } from "@/components/Logo";
 import { Ionicons } from "@expo/vector-icons";
-import { Stack, router } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
     StyleSheet,
@@ -19,19 +19,20 @@ import { useAuth } from "@/context/AuthContext";
 import useTrainerStore, { TrainingSession } from "@/store/trainerStore";
 
 export default function SessionsScreen() {
+    const router = useRouter();
     const { token } = useAuth();
-    const { 
-        sessions, 
-        sessionsLoading, 
+    const {
+        sessions,
+        sessionsLoading,
         loading,
-        fetchSessions, 
+        fetchSessions,
         createSession,
         updateSession,
         toggleSessionStatus,
         error,
         clearError
     } = useTrainerStore();
-    
+
     const [refreshing, setRefreshing] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
     const [editingSession, setEditingSession] = useState<TrainingSession | null>(null);
@@ -124,11 +125,11 @@ export default function SessionsScreen() {
 
     const handleToggleStatus = async (session: TrainingSession) => {
         if (!token) return;
-        
+
         Alert.alert(
             session.isActive ? 'Deactivate Session' : 'Activate Session',
-            session.isActive 
-                ? 'This will hide the session from members. Continue?' 
+            session.isActive
+                ? 'This will hide the session from members. Continue?'
                 : 'This will make the session available to members. Continue?',
             [
                 { text: 'Cancel', style: 'cancel' },
@@ -179,7 +180,7 @@ export default function SessionsScreen() {
                 <Text style={styles.headerSubtitle}>Manage your training sessions</Text>
             </View>
 
-            <ScrollView 
+            <ScrollView
                 style={styles.scrollView}
                 contentContainerStyle={styles.contentContainer}
                 refreshControl={
@@ -222,7 +223,7 @@ export default function SessionsScreen() {
                             </View>
 
                             <View style={styles.sessionActions}>
-                                <TouchableOpacity 
+                                <TouchableOpacity
                                     style={styles.editButton}
                                     onPress={() => openEditModal(session)}
                                 >
@@ -316,13 +317,13 @@ export default function SessionsScreen() {
                         </ScrollView>
 
                         <View style={styles.modalFooter}>
-                            <TouchableOpacity 
+                            <TouchableOpacity
                                 style={styles.cancelModalButton}
                                 onPress={() => setModalVisible(false)}
                             >
                                 <Text style={styles.cancelModalButtonText}>Cancel</Text>
                             </TouchableOpacity>
-                            <TouchableOpacity 
+                            <TouchableOpacity
                                 style={[styles.submitButton, loading && styles.buttonDisabled]}
                                 onPress={handleSubmit}
                                 disabled={loading}

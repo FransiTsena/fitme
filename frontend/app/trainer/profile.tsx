@@ -31,7 +31,7 @@ const SPECIALIZATIONS = [
 ];
 
 export default function TrainerProfileScreen() {
-    const { user, token } = useAuth();
+    const { user, token, logout } = useAuth();
     const { profile, loading, fetchTrainerProfile, updateProfile } = useTrainerStore();
     const [isEditing, setIsEditing] = useState(false);
     const [saving, setSaving] = useState(false);
@@ -99,6 +99,24 @@ export default function TrainerProfileScreen() {
         } else {
             Alert.alert('Error', result.error || 'Failed to update profile');
         }
+    };
+
+    const handleLogout = () => {
+        Alert.alert(
+            "Logout",
+            "Are you sure you want to logout?",
+            [
+                { text: "Cancel", style: "cancel" },
+                {
+                    text: "Logout",
+                    style: "destructive",
+                    onPress: () => {
+                        logout();
+                        router.replace("/login");
+                    }
+                }
+            ]
+        );
     };
 
     const handleCancel = () => {
@@ -175,7 +193,7 @@ export default function TrainerProfileScreen() {
                 {/* User Info Section */}
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Personal Information</Text>
-                    
+
                     <View style={styles.infoRow}>
                         <Ionicons name="mail-outline" size={20} color="#888" />
                         <View style={styles.infoContent}>
@@ -274,13 +292,13 @@ export default function TrainerProfileScreen() {
             </ScrollView>
 
             {/* Bottom Buttons */}
-            {isEditing && (
+            {isEditing ? (
                 <View style={styles.buttonContainer}>
                     <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
                         <Text style={styles.cancelButtonText}>Cancel</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity 
-                        style={[styles.saveButton, saving && styles.buttonDisabled]} 
+                    <TouchableOpacity
+                        style={[styles.saveButton, saving && styles.buttonDisabled]}
                         onPress={handleSave}
                         disabled={saving}
                     >
@@ -289,6 +307,15 @@ export default function TrainerProfileScreen() {
                         ) : (
                             <Text style={styles.saveButtonText}>Save Changes</Text>
                         )}
+                    </TouchableOpacity>
+                </View>
+            ) : (
+                <View style={[styles.buttonContainer, { position: 'absolute', bottom: 85, left: 0, right: 0, paddingBottom: 10 }]}>
+                    <TouchableOpacity style={[styles.saveButton, { backgroundColor: '#ff8c2b' }]} onPress={() => setIsEditing(true)}>
+                        <Text style={styles.saveButtonText}>Edit Profile</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+                        <Text style={styles.logoutButtonText}>Logout</Text>
                     </TouchableOpacity>
                 </View>
             )}
@@ -530,6 +557,20 @@ const styles = StyleSheet.create({
     },
     saveButtonText: {
         color: "#000",
+        fontWeight: "bold",
+        fontSize: 16,
+    },
+    logoutButton: {
+        flex: 1,
+        backgroundColor: "#222",
+        padding: 16,
+        borderRadius: 12,
+        alignItems: "center",
+        borderWidth: 1,
+        borderColor: "#ff4444",
+    },
+    logoutButtonText: {
+        color: "#ff4444",
         fontWeight: "bold",
         fontSize: 16,
     },

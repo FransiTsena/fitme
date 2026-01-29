@@ -15,13 +15,14 @@ export interface ITrainingSession extends Document {
 const trainingSessionSchema = new Schema({
     trainerId: { type: Schema.Types.ObjectId, ref: "Trainer", required: true },
     gymId: { type: Schema.Types.ObjectId, ref: "Gym", required: true },
-    
+
     title: { type: String, required: true },
     description: { type: String },
-    
+    thumbnail: { type: String }, // Session image
+
     durationMinutes: { type: Number, required: true },
     price: { type: Number, required: true }, // Price in ETB
-    
+
     isActive: { type: Boolean, default: true }
 }, {
     timestamps: true,

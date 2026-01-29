@@ -44,7 +44,7 @@ export const sessionBookingService = {
         const payment = new Payment({
             userId,
             amount: session.price,
-            currency: "ETB", 
+            currency: "ETB",
             status: "completed",
             method: "in-app",
             type: "session"
@@ -76,7 +76,10 @@ export const sessionBookingService = {
         return await SessionBooking.find({ memberId })
             .populate("sessionId", "title description durationMinutes price")
             .populate("gymId", "name address")
-            .populate("trainerId", "specialization userId") 
+            .populate({
+                path: "trainerId",
+                populate: { path: "userId", select: "name" }
+            })
             .sort({ scheduledDate: -1 });
     },
 

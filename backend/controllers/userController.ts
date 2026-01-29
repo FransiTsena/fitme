@@ -9,19 +9,29 @@ export const signupUser = async (req: Request, res: Response) => {
   try {
     const { email, password, name, phone, fatherName, registrationRole, city, area, specialization, bio, gymId } = req.body;
 
-    if (!email || !password || !name) {
+    if (!email || !password || !name || !email.trim() || !password.trim() || !name.trim()) {
       return res.status(400).json({ error: "Email, password, and name are required" });
     }
 
+    // Basic email format validation on backend
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      return res.status(400).json({ error: "Invalid email format" });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({ error: "Password must be at least 6 characters long" });
+    }
+
     const result = await userService.signup({
-      email,
-      password,
-      name,
-      phone,
-      fatherName,
+      email: email.trim(),
+      password: password, // Don't trim password as spaces might be intentional but usually not
+      name: name.trim(),
+      phone: phone?.trim(),
+      fatherName: fatherName?.trim(),
       registrationRole,
-      city,
-      area,
+      city: city?.trim(),
+      area: area?.trim(),
       specialization,
       bio,
       gymId,

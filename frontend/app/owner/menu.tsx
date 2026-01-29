@@ -50,6 +50,11 @@ export default function OwnerMenuModal() {
                     <Text style={styles.menuItemText}>Members</Text>
                 </TouchableOpacity>
 
+                <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/owner/membership-plans')}>
+                    <Ionicons name="card-outline" size={24} color="#fff" />
+                    <Text style={styles.menuItemText}>Membership Plans</Text>
+                </TouchableOpacity>
+
                 <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/owner/trainers-list-owner')}>
                     <Ionicons name="barbell-outline" size={24} color="#fff" />
                     <Text style={styles.menuItemText}>Trainers</Text>

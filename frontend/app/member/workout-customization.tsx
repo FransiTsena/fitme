@@ -20,7 +20,7 @@ export default function WorkoutCustomizationScreen() {
                                 <Ionicons name="notifications-outline" size={24} color="#fff" />
                                 <View style={styles.badge} />
                             </TouchableOpacity>
-                            <TouchableOpacity>
+                            <TouchableOpacity onPress={() => router.push("/member/menu")}>
                                 <Ionicons name="menu-outline" size={24} color="#fff" />
                             </TouchableOpacity>
                         </View>

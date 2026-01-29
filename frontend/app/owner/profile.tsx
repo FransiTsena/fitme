@@ -1,7 +1,7 @@
 import { Logo } from "@/components/Logo";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { Stack, router } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
     ActivityIndicator,
@@ -23,8 +23,9 @@ import useOwnerStore from "@/store/ownerStore";
 const screenWidth = Dimensions.get("window").width;
 
 export default function OwnerProfileScreen() {
+    const router = useRouter();
     const [activeTab, setActiveTab] = useState("Profile");
-    const { user, token } = useAuth();
+    const { user, token, logout } = useAuth();
     const { gym, analytics, loading, analyticsLoading, error, fetchGym, fetchAnalytics, updateGym, clearError } = useOwnerStore();
 
     // Form state for editing
@@ -90,6 +91,20 @@ export default function OwnerProfileScreen() {
         if (result.success) {
             Alert.alert('Success', 'Profile updated successfully');
         }
+    };
+
+    const handleLogout = () => {
+        Alert.alert("Logout", "Are you sure you want to logout?", [
+            { text: "Cancel", style: "cancel" },
+            {
+                text: "Logout",
+                style: "destructive",
+                onPress: async () => {
+                    await logout();
+                    router.replace("/login");
+                },
+            },
+        ]);
     };
 
     // Chart data from analytics or defaults
@@ -281,6 +296,14 @@ export default function OwnerProfileScreen() {
                                         <Text style={styles.saveBtnText}>Save Changes</Text>
                                     )}
                                 </LinearGradient>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                                style={styles.logoutButton}
+                                onPress={handleLogout}
+                            >
+                                <Ionicons name="log-out-outline" size={20} color="#ff4444" />
+                                <Text style={styles.logoutButtonText}>Logout</Text>
                             </TouchableOpacity>
                         </View>
 
@@ -766,6 +789,23 @@ const styles = StyleSheet.create({
     rankRevenueLabel: {
         color: '#666',
         fontSize: 10,
+    },
+    logoutButton: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: "rgba(255, 68, 68, 0.1)",
+        padding: 15,
+        borderRadius: 12,
+        marginTop: 20,
+        borderWidth: 1,
+        borderColor: "rgba(255, 68, 68, 0.3)",
+    },
+    logoutButtonText: {
+        color: "#ff4444",
+        fontSize: 16,
+        fontWeight: "600",
+        marginLeft: 8,
     },
     bottomNav: {
         flexDirection: 'row',

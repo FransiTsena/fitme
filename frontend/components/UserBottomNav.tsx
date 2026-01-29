@@ -1,9 +1,10 @@
 import { Ionicons } from "@expo/vector-icons";
-import { router, usePathname } from "expo-router";
+import { useRouter, usePathname } from "expo-router";
 import React from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 
 export function UserBottomNav() {
+    const router = useRouter();
     const pathname = usePathname();
 
     // Helper to check active state

@@ -11,18 +11,19 @@ import {
     RefreshControl,
     ActivityIndicator,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "@/context/AuthContext";
 import useOwnerStore from "@/store/ownerStore";
 
 export default function OwnerHomeScreen() {
     const { user, token } = useAuth();
-    const { 
-        gym, 
+    const {
+        gym,
         analytics,
-        fetchGym, 
-        fetchAnalytics 
+        fetchGym,
+        fetchAnalytics
     } = useOwnerStore();
-    
+
     const [refreshing, setRefreshing] = useState(false);
     const [initialLoading, setInitialLoading] = useState(true);
 
@@ -32,7 +33,7 @@ export default function OwnerHomeScreen() {
             setInitialLoading(false);
             return;
         }
-        
+
         try {
             await fetchGym(user.id, token);
         } catch (error) {
@@ -51,7 +52,7 @@ export default function OwnerHomeScreen() {
 
     useEffect(() => {
         loadData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user?.id, token]);
 
     const onRefresh = async () => {
@@ -107,7 +108,7 @@ export default function OwnerHomeScreen() {
                     <Text style={styles.noGymText}>
                         Register your gym to start managing memberships, trainers, and track your business analytics.
                     </Text>
-                    <TouchableOpacity 
+                    <TouchableOpacity
                         style={styles.registerButton}
                         onPress={() => router.push("/owner/owner-gym-registration")}
                     >
@@ -120,7 +121,7 @@ export default function OwnerHomeScreen() {
     }
 
     return (
-        <View style={styles.container} testID="owner-dashboard">
+        <SafeAreaView style={styles.container} edges={['top']} testID="owner-dashboard">
             <Stack.Screen
                 options={{
                     headerTitle: () => <Logo size={24} />,
@@ -142,7 +143,7 @@ export default function OwnerHomeScreen() {
                 }}
             />
 
-            <ScrollView 
+            <ScrollView
                 style={styles.scrollView}
                 contentContainerStyle={styles.contentContainer}
                 refreshControl={
@@ -163,11 +164,11 @@ export default function OwnerHomeScreen() {
                     <View style={[
                         styles.statusBadge,
                         gym.verificationStatus === 'approved' ? styles.approvedBadge :
-                        gym.verificationStatus === 'pending' ? styles.pendingBadge : styles.rejectedBadge
+                            gym.verificationStatus === 'pending' ? styles.pendingBadge : styles.rejectedBadge
                     ]}>
                         <Text style={styles.statusText}>
                             {gym.verificationStatus === 'approved' ? 'Verified' :
-                             gym.verificationStatus === 'pending' ? 'Pending' : 'Rejected'}
+                                gym.verificationStatus === 'pending' ? 'Pending' : 'Rejected'}
                         </Text>
                     </View>
                 </View>
@@ -220,10 +221,10 @@ export default function OwnerHomeScreen() {
                     <View style={styles.revenueHeader}>
                         <Text style={styles.sectionTitle}>Revenue</Text>
                         <View style={styles.revenueBadge}>
-                            <Ionicons 
-                                name={(analytics?.revenue?.growth ?? 0) >= 0 ? "trending-up" : "trending-down"} 
-                                size={14} 
-                                color={(analytics?.revenue?.growth ?? 0) >= 0 ? "#00cc44" : "#ff4444"} 
+                            <Ionicons
+                                name={(analytics?.revenue?.growth ?? 0) >= 0 ? "trending-up" : "trending-down"}
+                                size={14}
+                                color={(analytics?.revenue?.growth ?? 0) >= 0 ? "#00cc44" : "#ff4444"}
                             />
                             <Text style={[
                                 styles.revenueGrowth,
@@ -243,7 +244,7 @@ export default function OwnerHomeScreen() {
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Quick Actions</Text>
                     <View style={styles.quickActionsGrid}>
-                        <TouchableOpacity 
+                        <TouchableOpacity
                             style={styles.actionCard}
                             onPress={() => router.push("/owner/members-list-owner")}
                         >
@@ -253,7 +254,7 @@ export default function OwnerHomeScreen() {
                             <Text style={styles.actionText}>Members</Text>
                         </TouchableOpacity>
 
-                        <TouchableOpacity 
+                        <TouchableOpacity
                             style={styles.actionCard}
                             onPress={() => router.push("/owner/trainers-list-owner")}
                         >
@@ -263,9 +264,9 @@ export default function OwnerHomeScreen() {
                             <Text style={styles.actionText}>Trainers</Text>
                         </TouchableOpacity>
 
-                        <TouchableOpacity 
+                        <TouchableOpacity
                             style={styles.actionCard}
-                            onPress={() => router.push("/owner/memberships" as any)}
+                            onPress={() => router.push("/owner/membership-plans")}
                         >
                             <View style={[styles.actionIcon, { backgroundColor: '#00cc4420' }]}>
                                 <Ionicons name="card" size={28} color="#00cc44" />
@@ -273,7 +274,7 @@ export default function OwnerHomeScreen() {
                             <Text style={styles.actionText}>Plans</Text>
                         </TouchableOpacity>
 
-                        <TouchableOpacity 
+                        <TouchableOpacity
                             style={styles.actionCard}
                             onPress={() => router.push("/owner/analytics" as any)}
                         >
@@ -317,7 +318,7 @@ export default function OwnerHomeScreen() {
                 {/* Gym Settings */}
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Gym Settings</Text>
-                    <TouchableOpacity 
+                    <TouchableOpacity
                         style={styles.settingItem}
                         onPress={() => router.push("/owner/profile")}
                     >
@@ -328,7 +329,7 @@ export default function OwnerHomeScreen() {
                         <Ionicons name="chevron-forward" size={20} color="#666" />
                     </TouchableOpacity>
 
-                    <TouchableOpacity 
+                    <TouchableOpacity
                         style={styles.settingItem}
                         onPress={() => router.push("/owner/operating-hours" as any)}
                     >
@@ -339,7 +340,7 @@ export default function OwnerHomeScreen() {
                         <Ionicons name="chevron-forward" size={20} color="#666" />
                     </TouchableOpacity>
 
-                    <TouchableOpacity 
+                    <TouchableOpacity
                         style={styles.settingItem}
                         onPress={() => router.push("/owner/amenities" as any)}
                     >
@@ -375,7 +376,7 @@ export default function OwnerHomeScreen() {
                     <Text style={styles.navText}>Profile</Text>
                 </TouchableOpacity>
             </View>
-        </View>
+        </SafeAreaView>
     );
 }
 

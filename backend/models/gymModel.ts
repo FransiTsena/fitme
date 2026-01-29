@@ -37,7 +37,8 @@ const gymSchema = new mongoose.Schema({
   },
 
   // Gym images
-  photos: [{ type: String }],
+  thumbnail: { type: String }, // Main image
+  photos: [{ type: String }], // Gallery
 
   // Verification & visibility
   verificationStatus: {

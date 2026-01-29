@@ -1,6 +1,6 @@
 import { Logo } from "@/components/Logo";
 import { Ionicons } from "@expo/vector-icons";
-import { Stack, router } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
     KeyboardAvoidingView,
@@ -16,6 +16,7 @@ import {
 import { useAuth } from "@/context/AuthContext";
 
 export default function LoginScreen() {
+    const router = useRouter();
     const authContext = useAuth();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -23,13 +24,20 @@ export default function LoginScreen() {
     const { login, loading, error, clearError, fetchUser } = authContext;
 
     const handleLogin = async () => {
-        if (!email || !password) {
+        const trimmedEmail = email.trim();
+        if (!trimmedEmail || !password) {
             Alert.alert("Error", "Please fill in all fields");
             return;
         }
 
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(trimmedEmail)) {
+            Alert.alert("Error", "Please enter a valid email address");
+            return;
+        }
+
         try {
-            const result = await login(email, password);
+            const result = await login(trimmedEmail, password);
             if (result.success) {
                 // Wait for fetchUser to complete, then navigate based on user role
                 await fetchUser();

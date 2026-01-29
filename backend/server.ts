@@ -15,6 +15,9 @@ import trainingSessionRoutes from "./routes/trainingSession.js";
 import subscriptionRoutes from "./routes/subscription.js";
 import bookingRoutes from "./routes/booking.js";
 import analyticsRoutes from "./routes/analytics.js";
+import workoutPlanRoutes from "./routes/workoutPlan.js";
+import exerciseRoutes from "./routes/exercise.js";
+import uploadRoutes from "./routes/upload.js";
 
 
 
@@ -74,6 +77,9 @@ app.use("/api/training-sessions", trainingSessionRoutes);
 app.use("/api/subscriptions", subscriptionRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/analytics", analyticsRoutes);
+app.use("/api/workout-plans", workoutPlanRoutes);
+app.use("/api/exercises", exerciseRoutes);
+app.use("/api/upload", uploadRoutes);
 
 
 

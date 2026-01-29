@@ -84,7 +84,7 @@ export default function GymSelectionScreen() {
                                 <TouchableOpacity>
                                     <Ionicons name="notifications-outline" size={24} color="#fff" />
                                 </TouchableOpacity>
-                                <TouchableOpacity>
+                                <TouchableOpacity onPress={() => router.push("/member/menu")}>
                                     <Ionicons name="menu-outline" size={24} color="#fff" />
                                 </TouchableOpacity>
                             </View>

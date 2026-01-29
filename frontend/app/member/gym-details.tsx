@@ -1,6 +1,6 @@
 import { Logo } from "@/components/Logo";
 import { Ionicons } from "@expo/vector-icons";
-import { Stack, router, useLocalSearchParams } from "expo-router";
+import { Stack, useRouter, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
     StyleSheet,
@@ -41,6 +41,7 @@ const getNestedValue = (obj: any, path: string, defaultValue: any = 'N/A') => {
 };
 
 export default function GymDetailsScreen() {
+    const router = useRouter();
     const { id } = useLocalSearchParams<{ id: string }>();
     const { user, token } = useAuth();
     const [gym, setGym] = useState<any>(null);
@@ -151,10 +152,14 @@ export default function GymDetailsScreen() {
             />
 
             <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
-                {/* Gym Cover Image */}
+                {/* Gym Cover Image & Gallery */}
                 <View style={styles.imageContainer}>
                     {(gym.photos || gym.images || []).length > 0 ? (
-                        <Image source={{ uri: (gym.photos || gym.images)[0] }} style={styles.coverImage} />
+                        <ScrollView horizontal pagingEnabled showsHorizontalScrollIndicator={false}>
+                            {(gym.photos || gym.images).map((img: string, idx: number) => (
+                                <Image key={idx} source={{ uri: img }} style={[styles.coverImage, { width: width }]} />
+                            ))}
+                        </ScrollView>
                     ) : (
                         <View style={styles.placeholderImage}>
                             <Ionicons name="image-outline" size={40} color="#666" />

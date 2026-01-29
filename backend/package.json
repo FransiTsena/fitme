@@ -21,7 +21,7 @@
     "migrate:phases": "node scripts/migratePhases.js",
     "migrate:phases:live": "DRY_RUN=false node scripts/migratePhases.js",
     "seed:gyms": "tsx scripts/seedGyms.ts",
-    "seed": "tsx scripts/seedGyms.ts"
+    "seed": "tsx scripts/masterSeed.ts"
   },
   "type": "module",
   "author": "",

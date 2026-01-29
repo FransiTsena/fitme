@@ -56,10 +56,12 @@ export const getMySessions = async (req: Request, res: Response) => {
 export const getGymSessions = async (req: Request, res: Response) => {
     try {
         const { gymId } = req.params;
+        const userId = req.user?.id; // From requireAuth middleware
+
         if (!gymId) {
             return res.status(400).json({ error: "Gym ID is required" });
         }
-        const sessions = await trainingSessionService.getSessionsByGym(gymId);
+        const sessions = await trainingSessionService.getSessionsByGym(gymId, userId);
         res.status(200).json({ sessions });
     } catch (error: any) {
         res.status(500).json({ error: error.message });

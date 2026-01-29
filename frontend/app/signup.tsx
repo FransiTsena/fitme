@@ -1,6 +1,6 @@
 import { Logo } from "@/components/Logo";
 import { Ionicons } from "@expo/vector-icons";
-import { Stack, router } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import React, { useState, useEffect } from "react";
 import {
     KeyboardAvoidingView,
@@ -47,6 +47,7 @@ const DEFAULT_API_BASE_URL = Platform.select({
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || DEFAULT_API_BASE_URL;
 
 export default function SignupScreen() {
+    const router = useRouter();
     const [role, setRole] = useState("User");
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
@@ -102,9 +103,35 @@ export default function SignupScreen() {
     };
 
     const handleSignup = async () => {
+        // Trim inputs
+        const trimmedName = name.trim();
+        const trimmedEmail = email.trim();
+        const trimmedPhone = phone.trim();
+
         // Basic validation
-        if (!name || !email || !phone || !password || !confirmPassword) {
+        if (!trimmedName || !trimmedEmail || !trimmedPhone || !password || !confirmPassword) {
             Alert.alert("Error", "Please fill in all fields");
+            return;
+        }
+
+        // Email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(trimmedEmail)) {
+            Alert.alert("Error", "Please enter a valid email address");
+            return;
+        }
+
+        // Phone validation (Ethiopian phone number format or international)
+        // Basic check for at least 9 digits
+        const phoneRegex = /^\+?[0-9]{9,15}$/;
+        if (!phoneRegex.test(trimmedPhone)) {
+            Alert.alert("Error", "Please enter a valid phone number");
+            return;
+        }
+
+        // Password validation
+        if (password.length < 6) {
+            Alert.alert("Error", "Password must be at least 6 characters long");
             return;
         }
 
@@ -136,10 +163,10 @@ export default function SignupScreen() {
 
         try {
             const signupData: any = {
-                email,
+                email: trimmedEmail,
                 password,
-                name,
-                phone,
+                name: trimmedName,
+                phone: trimmedPhone,
                 registrationRole: role.toLowerCase(),
             };
 
